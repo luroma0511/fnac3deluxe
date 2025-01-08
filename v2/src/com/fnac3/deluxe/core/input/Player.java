@@ -79,7 +79,7 @@ public class Player {
         snapPosition = false;
         batteryAvailable = false;
         flashlightStolen = false;
-        flashlightTimer = 40;
+        flashlightTimer = 45;
         flashlightAlphaVisibility = 1;
         flashlightAlpha = 1;
         flickerMultiplier = 0.25f;
@@ -180,7 +180,7 @@ public class Player {
                     (int) my) / 10_000;
 
             if (pixel == -1677) {
-                flashlightTimer = 40;
+                flashlightTimer = 45;
                 batteryAvailable = false;
                 batterySound = true;
             }
@@ -202,7 +202,7 @@ public class Player {
                 }
             }
 
-            if (flashlightTimer <= 25 && !batteryAvailable) {
+            if (flashlightTimer <= 35 && !batteryAvailable) {
                 batteryAvailable = true;
             }
 

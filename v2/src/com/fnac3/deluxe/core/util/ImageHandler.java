@@ -126,6 +126,11 @@ public class ImageHandler {
     private static void menuLoad(){
         for (int i = 1; i <= 8; i++){
             add("Static/Static" + i);
+            add("Static/GameoverStatic" + i);
+        }
+        for (int i = 1; i <= 32; i++){
+            add("menu/candy/monster/" + i);
+            add("menu/candy/shadow/" + i);
         }
         add("menu/challenge_off");
         add("menu/challenge_on");
@@ -138,11 +143,12 @@ public class ImageHandler {
         add("menu/help");
         add("menu/nightArrow");
 
-        add("menu/rat");
-        add("menu/cat");
-        add("menu/vinnie");
+        add("menu/newRat");
+        add("menu/newCat");
+        add("menu/newVinnie");
         add("menu/shadowrat");
         add("menu/shadowcat");
+        add("menu/shadowvinnie");
 
         //old ui
         add("menu/old/ai_box");

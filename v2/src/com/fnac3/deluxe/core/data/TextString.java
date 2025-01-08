@@ -2,7 +2,7 @@ package com.fnac3.deluxe.core.data;
 
 public class TextString {
 
-    private static final String version = "v1.1.8";
+    private static final String version = "v2.0.0";
 
     public static String ratText = "Rat will appear from the doors. After he comes in, he will "
             + "wait to begin his attack. After his attack, he will go under the bed and you must "
@@ -30,6 +30,8 @@ public class TextString {
             + "eventually begin his attack. After his attack, he will be up close in the middle side. Flash him to "
             + "make him go under the bed. If Shadow Rat is in the room, Shadow Cat will eventually come up on either "
             + "side of the bed. After dealing with Shadow Rat, flash him to send him back under the bed.";
+
+    public static String shadowVinnieText = "Shadow Vinnie is AN ASSHOLE!!!";
 
     public static String twitchyCatText = "Shadow Cat will twitch more and do another attack up close before going "
             + "under the bed.";

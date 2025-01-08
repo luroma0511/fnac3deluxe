@@ -55,6 +55,7 @@ public class FNaC3Deluxe extends ApplicationAdapter implements InputProcessor {
 		Discord.start();
 		audioClass = new AudioClass();
 		audioClass.createSound("thunder");
+		audioClass.createSound("deluxeMenu");
 		audioClass.createSound("dreamTheme");
 		audioClass.createSound("select");
 		data = new Data();

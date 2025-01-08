@@ -884,6 +884,7 @@ public class Vinnie {
 
                     timeToFlash -= Gdx.graphics.getDeltaTime();
                     patienceHealthTimer += Gdx.graphics.getDeltaTime() / 4;
+                    if (patienceHealthTimer > 2) patienceHealthTimer = 2;
                     if (timeToFlash <= 0 && attackTime == 0) {
                         if (jumps == 0) {
                             Player.snapPosition = false;

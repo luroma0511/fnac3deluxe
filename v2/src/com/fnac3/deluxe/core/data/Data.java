@@ -14,6 +14,7 @@ public class Data {
 
     public boolean ShadowRatAI;
     public boolean ShadowCatAI;
+    public boolean ShadowVinnieAI;
 
     public Map<String, Star> stars;
 
@@ -46,8 +47,8 @@ public class Data {
     //file names
     private static final String externalName = "AppData/Roaming/Five Nights at Candy's 3 Deluxe/Save";
     static final String dirName = System.getProperty("user.home") + "/" + externalName;
-    private static final String fileName = dirName + "/Game.save";
-    private static final String configFileName = dirName + "/Config.save";
+    private static final String fileName = dirName + "/Game_v2.save";
+    private static final String configFileName = dirName + "/Config_v2.save";
     private File configFile;
 
     public Data(){
@@ -61,21 +62,15 @@ public class Data {
         createStar("Stalling Duo", 0);
         createStar("Play Date", 0);
         createStar("Monster Fever", 0);
-        createStar("Rat & Cat Theater", 0);
+        createStar("Theater Trauma", 0);
         createStar("Custom Night", 0);
-        createStar("The Dreamscape", 1);
-        createStar("Monstergami Night", -1);
+        createStar("The Deepscape", 1);
 
         readConfigFile();
     }
 
     public String modeDescriptions(String mode){
         String extra;
-        if (mode.equals("Monstergami Night")){
-            extra = Math.max(0, saveData.modes.get(mode).beatType - 2) + "/3 Challenges";
-            return saveData.modes.get(mode).time + " | " + extra;
-        }
-
         extra = Math.max(0, saveData.modes.get(mode).beatType - 1) + "/4 Challenges";
         if (saveData.modes.get(mode).beatType == 0) {
             return "Not Completed | " + extra;
@@ -161,10 +156,9 @@ public class Data {
         createMode("Stalling Duo");
         createMode("Play Date");
         createMode("Monster Fever");
-        createMode("Rat & Cat Theater");
+        createMode("Theater Trauma");
         createMode("Custom Night");
-        createMode("The Dreamscape");
-        createMode("Monstergami Night");
+        createMode("The Deepscape");
 
         try {
             file.createNewFile();
@@ -204,6 +198,7 @@ public class Data {
 
             ShadowRatAI = readBooleanLineConfig(br);
             ShadowCatAI = readBooleanLineConfig(br);
+            ShadowVinnieAI = readBooleanLineConfig(br);
 
             Menu.nightType = readIntLineConfig(br);
             Menu.previousNightType = Menu.nightType;
@@ -246,6 +241,7 @@ public class Data {
                 .append("Vinnie AI = ").append(VinnieAI).append("\n")
                 .append("Shadow Rat AI = ").append(ShadowRatAI).append("\n")
                 .append("Shadow Cat AI = ").append(ShadowCatAI).append("\n")
+                .append("Shadow Vinnie AI = ").append(ShadowVinnieAI).append("\n")
                 .append("Menu Night Type = ").append(Menu.nightType).append("\n")
                 .append("Old Menu Context = ").append(Menu.oldMenuContext).append("\n")
                 .append("vSync = ").append(vSync).append("\n")

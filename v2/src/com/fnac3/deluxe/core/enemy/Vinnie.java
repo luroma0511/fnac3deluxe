@@ -770,7 +770,7 @@ public class Vinnie {
                 patienceTimer = 0.75f + 0.025f * (20 - ai);
                 Player.blacknessTimes = 3;
                 Player.blacknessMultiplier = 6;
-                timeToFlash = 0.45f + (0.05f * random.nextInt(6)) + (0.0125f * (20 - ai));
+                timeToFlash = 0.65f + (0.0125f * (20 - ai));
                 knocks = 0;
                 knockTimer = 0;
                 audioClass.play("walking_in");
@@ -884,6 +884,7 @@ public class Vinnie {
 
                     timeToFlash -= Gdx.graphics.getDeltaTime();
                     patienceHealthTimer += Gdx.graphics.getDeltaTime() / 4;
+                    if (patienceHealthTimer > 2) patienceHealthTimer = 2;
                     if (timeToFlash <= 0 && attackTime == 0) {
                         if (jumps == 0) {
                             Player.snapPosition = false;
@@ -932,7 +933,7 @@ public class Vinnie {
                             Player.snapToSide = side;
                         }
 
-                        timeToFlash = 0.45f + (0.05f * random.nextInt(6)) + (0.0125f * (20 - ai));
+                        timeToFlash = 0.3f + (0.1f * random.nextInt(5)) + (0.0125f * (20 - ai));
                         patienceTimer = 0.75f + 0.025f * (20 - ai);
                         moveToPosition = 2 * (1 + random.nextInt(7));
                         if (random.nextInt(2) == 1) {
@@ -993,7 +994,7 @@ public class Vinnie {
                         if (side == 1 && Cat.side == Player.side) patienceTimer = 3;
                         else patienceTimer = 1f;
                         patienceHealthTimer = 2f;
-                        timeToFlash = 0.45f + (0.05f * random.nextInt(6)) + (0.0125f * (20 - ai));
+                        timeToFlash = 0.65f + (0.0125f * (20 - ai));
                     }
                 }
             }
@@ -1108,7 +1109,7 @@ public class Vinnie {
             boolean lookingAway = (Player.side == 0 && side == 2) || (Player.side == 2 && side == 0);
 
             if (cooldownTimer <= 0 || (lookingAway && Rat.room == 2 && Cat.room == 2 && Monstergami.side == -1)){
-                if (lookingAway) {
+                if (lookingAway && bedSpotted) {
                     audioClass.play("peek");
                     room = 3;
                     bedSpotted = false;

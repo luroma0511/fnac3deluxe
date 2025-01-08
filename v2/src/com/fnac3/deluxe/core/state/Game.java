@@ -447,9 +447,9 @@ public class Game {
         dreamscapeStart = false;
 
         if (theaterMusic == null) {
-            theaterMusic = Gdx.audio.newMusic(Gdx.files.local("assets/sounds/music theater.ogg"));
+            theaterMusic = Gdx.audio.newMusic(Gdx.files.local("assets/sounds/theaterMusic.wav"));
             theaterMusic.setLooping(true);
-            theaterMusic.setVolume(0.1f);
+            theaterMusic.setVolume(0.3f);
             if (Menu.modeName.contains("Rat & Cat Theater") && data.nightMusic){
                 theaterMusic.play();
             }

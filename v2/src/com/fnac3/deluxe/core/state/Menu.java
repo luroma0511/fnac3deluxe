@@ -2,7 +2,6 @@ package com.fnac3.deluxe.core.state;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -35,9 +34,10 @@ public class Menu {
 
     private static float shadowRatButtonAlpha;
     private static float shadowCatButtonAlpha;
-    private static  float shadowCatReskinButtonAlpha;
+    private static float shadowVinnieButtonAlpha;
     private static float shadowRatAlpha;
     private static float shadowCatAlpha;
+    private static float shadowVinnieAlpha;
 
     private static float ratButtonAlpha;
     private static float catButtonAlpha;
@@ -46,6 +46,9 @@ public class Menu {
     private static float catAlpha;
     private static float vinnieAlpha;
     private static float whiteAlpha;
+
+    private static float candyAlpha;
+    private static float candyFrame;
 
     public static boolean ratButtonHovered;
     public static boolean catButtonHovered;
@@ -71,9 +74,6 @@ public class Menu {
     private static int leftArrowPosition;
     private static int rightArrowPosition;
     private static GlyphLayout layoutModeTemp;
-
-    private static float shadowNightAlpha;
-    private static float customNightAlpha;
 
     public static int nightType;
     public static int previousNightType;
@@ -149,8 +149,8 @@ public class Menu {
     private static BitmapFont menuFontLabel;
     private static BitmapFont menuFontCaption;
 
-    private static Music customNightMusic;
-    private static boolean playDreamscape;
+    private static boolean playDeluxe;
+
     public static boolean mouseOver(float mx, float my, float x1, float y1, float x2, float y2){
         return mx >= x1 && mx <= x2 && my >= y1 && my <= y2;
     }
@@ -255,7 +255,7 @@ public class Menu {
             textModifier(TextString.oldMenuText);
             textCase = 14;
         } else if (nightModes && nightType == 1) {
-            textModifier("Night Modes unavailable in The Dreamscape.");
+            textModifier("Night Modes unavailable in The Deepscape.");
             textCase = 15;
             nightModes = false;
         } else if (freeScroll){
@@ -298,9 +298,6 @@ public class Menu {
             }
             if (leftPressed){
                 stateManager.setState(StateManager.State.LOADING);
-                if (customNightMusic.isPlaying()){
-                    customNightMusic.stop();
-                }
                 loaded = false;
             }
         } else {
@@ -336,8 +333,8 @@ public class Menu {
 
         } else if (nightType == 1) {
             boolean condition1 = mouseOver(mx, my,
-                    148 + charactersX, 274 + charactersY,
-                    296 + charactersX, 348 + charactersY);
+                    148 + charactersX, 278 + charactersY,
+                    296 + charactersX, 278 + 74 + charactersY);
             boolean condition2 = data.ShadowRatAI;
 
             shadowRatButtonAlpha = nightButtonAlpha(condition1, condition2, shadowRatButtonAlpha);
@@ -345,29 +342,22 @@ public class Menu {
             data.ShadowRatAI = nightShadowNightAI(audioClass, condition1, data.ShadowRatAI, 4, TextString.shadowRatText);
 
             condition1 = mouseOver(mx, my,
-                    524 + charactersX, 274 + charactersY,
-                    672 + charactersX, 348 + charactersY);
+                    347 + charactersX, 278 + charactersY,
+                    347 + 148 + charactersX, 278 + 74 + charactersY);
             condition2 = data.ShadowCatAI;
 
             shadowCatButtonAlpha = nightButtonAlpha(condition1, condition2, shadowCatButtonAlpha);
             shadowCatAlpha = nightCharacterAlpha(condition2, shadowCatAlpha);
             data.ShadowCatAI = nightShadowNightAI(audioClass, condition1, data.ShadowCatAI, 5, TextString.shadowCatText);
 
-            if (mouseOver(mx, my,
-                    554 + charactersX, 184 + charactersY,
-                    702 + charactersX, 258 + charactersY)){
-                if (shadowCatReskinButtonAlpha < 0.25f) {
-                    shadowCatReskinButtonAlpha += Gdx.graphics.getDeltaTime() * 2;
-                    if (shadowCatReskinButtonAlpha > 0.25f) {
-                        shadowCatReskinButtonAlpha = 0.25f;
-                    }
-                }
-            } else if (shadowCatReskinButtonAlpha > 0) {
-                shadowCatReskinButtonAlpha -= Gdx.graphics.getDeltaTime() * 2;
-                if (shadowCatReskinButtonAlpha < 0) {
-                    shadowCatReskinButtonAlpha = 0;
-                }
-            }
+            condition1 = mouseOver(mx, my,
+                    562 + charactersX, 278 + charactersY,
+                    562 + 148 + charactersX, 278 + 74 + charactersY);
+            condition2 = data.ShadowVinnieAI;
+
+            shadowVinnieButtonAlpha = nightButtonAlpha(condition1, condition2, shadowVinnieButtonAlpha);
+            shadowVinnieAlpha = nightCharacterAlpha(condition2, shadowVinnieAlpha);
+            data.ShadowVinnieAI = nightShadowNightAI(audioClass, condition1, data.ShadowVinnieAI, 6, TextString.shadowVinnieText);
         }
 
         for (Star star: data.stars.values()){
@@ -402,25 +392,27 @@ public class Menu {
             rightArrow = false;
         }
 
-        arrowHovered = (nightType == 0 && mouseOver(mx, my, 256, 712, 280, 740)
-                        || nightType == 1 && mouseOver(mx, my, 310, 712, 334, 740));
+        arrowHovered = mouseOver(mx, my, 260, 712, 280, 740);
         if (leftPressed){
             if (arrowHovered) {
-                audioClass.play("select");
                 arrowHovered = false;
                 modeSwitch = true;
-                if (nightType == 1) nightType = 0;
-                else {
+                if (nightType == 1) {
+                    nightType = 0;
+                    pitchTarget = 1;
+                } else {
                     nightType = 1;
                     if (data.oldMenu && oldMenuContext == 0) oldMenuContext = 1;
-                    playDreamscape = true;
+                    pitchTarget = 0.75f;
                 }
+                audioClass.play("thunder");
+                whiteAlpha = 1;
                 writeConfig = true;
             } else if (rightArrow) {
                 audioClass.play("select");
                 switch (mode) {
                     case "Custom Night":
-                    case "Rat & Cat Theater":
+                    case "Theater Trauma":
                         aiModeChange("Rat & Cat", data);
                         break;
                     case "Rat & Cat":
@@ -436,7 +428,7 @@ public class Menu {
                         aiModeChange("Monster Fever", data);
                         break;
                     case "Monster Fever":
-                        aiModeChange("Rat & Cat Theater", data);
+                        aiModeChange("Theater Trauma", data);
                         break;
                 }
                 modeSwitch = true;
@@ -446,7 +438,7 @@ public class Menu {
                 switch (mode) {
                     case "Custom Night":
                     case "Rat & Cat":
-                        aiModeChange("Rat & Cat Theater", data);
+                        aiModeChange("Theater Trauma", data);
                         break;
                     case "Final Night":
                         aiModeChange("Rat & Cat", data);
@@ -460,7 +452,7 @@ public class Menu {
                     case "Monster Fever":
                         aiModeChange("Play Date", data);
                         break;
-                    case "Rat & Cat Theater":
+                    case "Theater Trauma":
                         aiModeChange("Monster Fever", data);
                         break;
                 }
@@ -473,7 +465,7 @@ public class Menu {
                 else if (mode3) value = "Stalling Duo";
                 else if (mode4) value = "Play Date";
                 else if (mode5) value = "Monster Fever";
-                else value = "Rat & Cat Theater";
+                else value = "Theater Trauma";
 
                 audioClass.play("select");
                 if (mode.equals(value)) aiModeChange("Reset", data);
@@ -602,33 +594,19 @@ public class Menu {
             }
 
             if (whiteAlpha > 0){
-                whiteAlpha -= time * 2;
+                whiteAlpha -= time * 2.5f;
                 if (whiteAlpha < 0 || whiteAlpha > 1) whiteAlpha = 0;
             }
 
-            if (nightType == 0) {
-                if (customNightAlpha < 1) {
-                    customNightAlpha += time * 3;
-                    if (customNightAlpha > 1) customNightAlpha = 1;
-                }
+            if (data.challenge4) {
+                candyFrame += time * 30;
+                if (candyFrame > 31) candyFrame = 31;
             } else {
-                if (customNightAlpha > 0) {
-                    customNightAlpha -= time * 3;
-                    if (customNightAlpha < 0) customNightAlpha = 0;
-                }
+                candyFrame -= time * 30;
+                if (candyFrame < 0) candyFrame = 0;
             }
 
-            if (nightType == 1) {
-                if (shadowNightAlpha < 1) {
-                    shadowNightAlpha += time * 3;
-                    if (shadowNightAlpha > 1) shadowNightAlpha = 1;
-                }
-            } else {
-                if (shadowNightAlpha > 0) {
-                    shadowNightAlpha -= time * 3;
-                    if (shadowNightAlpha < 0) shadowNightAlpha = 0;
-                }
-            }
+            candyAlpha = Math.min(10, candyFrame) / 10;
 
             if (modeSwitch || layoutModeTemp == null){
                 if (modeSwitch) {
@@ -644,12 +622,12 @@ public class Menu {
                         } else if (data.RatAI == 15 && data.CatAI == 10 && data.VinnieAI == 15) {
                             mode = "Monster Fever";
                         } else if (data.RatAI == 20 && data.CatAI == 20 && data.VinnieAI == 20) {
-                            mode = "Rat & Cat Theater";
+                            mode = "Theater Trauma";
                         } else {
                             mode = "Custom Night";
                         }
                     } else if (nightType == 1){
-                        mode = "The Dreamscape";
+                        mode = "The Deepscape";
                     }
                     modeSwitch = false;
 
@@ -674,11 +652,7 @@ public class Menu {
 
                 layoutModeTemp.reset();
 
-                if (data.challenge4 && nightType == 0 && data.RatAI == 0 && data.CatAI == 0 && data.VinnieAI == 0){
-                    modeName = "Monstergami Night";
-                } else if (nightType == 0 || nightType == 1) {
-                    modeName = mode;
-                }
+                modeName = mode;
                 layoutModeTemp.setText(menuFontTitle, modeName);
                 leftArrowPosition = 433 - (int) (layoutModeTemp.width / 2) - 56;
                 rightArrowPosition = 433 + (int) (layoutModeTemp.width / 2) + 34;
@@ -689,34 +663,20 @@ public class Menu {
                 data.stars.get(s).setVisibility(nightType, data.saveData.modes.get(s).beatType != 0);
             }
 
-            if (customNightAlpha > 0 && !customNightMusic.isPlaying() && stateManager.getState() == StateManager.State.MENU){
-                customNightMusic.play();
-            } else if (customNightAlpha == 0){
-                customNightMusic.stop();
+            if (playDeluxe && stateManager.getState() == StateManager.State.MENU){
+                audioClass.play("deluxeMenu");
+                audioClass.loop("deluxeMenu", true);
+                playDeluxe = false;
             }
 
-            if (shadowNightAlpha > 0 && playDreamscape && stateManager.getState() == StateManager.State.MENU){
-                audioClass.play("dreamTheme");
-                audioClass.loop("dreamTheme", true);
-                playDreamscape = false;
-            } else if (shadowNightAlpha == 0){
-                audioClass.stop("dreamTheme");
-            }
-
-            if (shadowNightAlpha > 0){
-                audioClass.setVolume("dreamTheme", volume * shadowNightAlpha);
-                if (pitchTarget != 0){
-                    audioClass.setPitch("dreamTheme", pitchTarget);
-                    pitchTarget = 0;
-                }
-            }
-
-            if (customNightMusic.isPlaying()){
-                customNightMusic.setVolume(0.4f * volume * customNightAlpha);
+            audioClass.setVolume("deluxeMenu", volume * 0.75f);
+            if (pitchTarget != 0){
+                audioClass.setPitch("deluxeMenu", pitchTarget);
+                pitchTarget = 0;
             }
 
             if (staticScreen >= 0 && staticScreen < 8) {
-                staticScreen += time * 50;
+                staticScreen += time * 40;
             }
 
             if (staticScreen < 0 || staticScreen >= 8){
@@ -901,11 +861,6 @@ public class Menu {
                         modeName = mode;
                     }
 
-                    if (customNightMusic == null){
-                        customNightMusic = Gdx.audio.newMusic(Gdx.files.local("assets/sounds/menu.wav"));
-                        customNightMusic.setLooping(true);
-                    }
-
                     if (textValues == null){
                         textValues = new HashMap<>();
                     }
@@ -931,25 +886,18 @@ public class Menu {
                 } else if (ImageHandler.doneLoading){
                     loading = false;
                     loaded = true;
-                    if (nightType == 0) {
-                        customNightAlpha = 1;
-                        shadowNightAlpha = 0;
-                    } else if (nightType == 1){
-                        shadowNightAlpha = 1;
-                        customNightAlpha = 0;
-                    }
                     staticScreen = 0;
                     whiteAlpha = 0;
                     modeSwitch = true;
                     renderReady = true;
                     Discord.updateStatus = true;
                     nightType = previousNightType;
-                    if (nightType == 1) playDreamscape = true;
+                    playDeluxe = true;
+                    if (nightType == 1) pitchTarget = 0.75f;
                     blackFade = 0;
                 }
             } else {
-                audioClass.stop("dreamTheme");
-                audioClass.stop("thunder");
+                audioClass.stopAllSounds();
             }
         }
     }
@@ -1026,54 +974,69 @@ public class Menu {
         }
         screenBuffer.begin();
 
-        float r = 1 - 0.4f * shadowNightAlpha;
-        float b = 0.25f + 0.75f * shadowNightAlpha;
+        float r = nightType == 0 ? 1 : 0.6f;
+        float b = nightType == 0 ? 0.25f : 1;
 
         //static
         Texture texture = ImageHandler.images.get("Static/Static" + ((int) staticScreen + 1));
-        batch.setColor(r / 2, 0, b / 2, 0.5f);
+        batch.setColor(r / 2, 0, b / 2, 1);
+        batch.draw(texture, 0, 0);
+        texture = ImageHandler.images.get("Static/GameoverStatic" + ((int) staticScreen + 1));
+        batch.setColor(r / 2, 0, b / 2, 0.75f);
         batch.draw(texture, 0, 0);
 
         //characters
 
-        // custom night characters
-        if (customNightAlpha > 0) {
-            //characters
-            texture = ImageHandler.images.get("menu/vinnie");
-            batch.setColor(1, 1, 1, -0.25f + (1 + vinnieAlpha) * customNightAlpha);
-            batch.draw(texture, 450 + charactersX, 120 + charactersY);
+        // custom night
+        if (nightType == 0) {
+            texture = ImageHandler.images.get("menu/candy/monster/" + (int) (candyFrame + 1));
+            texture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+            batch.setColor(1, 1, 1, candyAlpha);
+            batch.draw(texture, charactersX + 80, charactersY + 190, 500, 500);
 
-            texture = ImageHandler.images.get("menu/cat");
-            batch.setColor(1, 1, 1, -0.25f + (1 + catAlpha) * customNightAlpha);
-            batch.draw(texture, 275 + charactersX, 163 + charactersY);
+            texture = ImageHandler.images.get("menu/newVinnie");
+            batch.setColor(1, 1, 1, -0.25f + (1 + vinnieAlpha));
+            batch.draw(texture, charactersX + 438, charactersY + 149);
 
-            texture = ImageHandler.images.get("menu/rat");
-            batch.setColor(1, 1, 1, -0.25f + (1 + ratAlpha) * customNightAlpha);
-            batch.draw(texture, charactersX, 166 + charactersY);
+            texture = ImageHandler.images.get("menu/newCat");
+            batch.setColor(1, 1, 1, -0.25f + (1 + catAlpha));
+            batch.draw(texture, charactersX + 280, charactersY + 153);
+
+            texture = ImageHandler.images.get("menu/newRat");
+            batch.setColor(1, 1, 1, -0.25f + (1 + ratAlpha));
+            batch.draw(texture, charactersX - 13, charactersY + 140);
         }
 
-        //2. shadow night
-        if (shadowNightAlpha > 0) {
-            texture = ImageHandler.images.get("menu/shadowrat");
+        // shadow night
+        if (nightType == 1) {
+            texture = ImageHandler.images.get("menu/candy/shadow/" + (int) (candyFrame + 1));
+            texture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+            batch.setColor(1, 1, 0.75f, candyAlpha);
+            batch.draw(texture, charactersX + 94, charactersY + 175, 500, 500);
 
-            batch.setColor(1, 1, 1, -0.25f + (1 + shadowRatAlpha) * shadowNightAlpha);
-            batch.draw(texture, charactersX, 140 + charactersY);
+            texture = ImageHandler.images.get("menu/shadowvinnie");
+            batch.setColor(1, 1, 1, -0.25f + (1 + shadowVinnieAlpha));
+            batch.draw(texture, charactersX + 438, charactersY + 149);
 
-            batch.setColor(1, 1, 1, -0.25f + (1 + shadowCatAlpha) * shadowNightAlpha);
             texture = ImageHandler.images.get("menu/shadowcat");
-            batch.draw(texture, 432 + charactersX, 130 + charactersY);
+            batch.setColor(1, 1, 1, -0.25f + (1 + shadowCatAlpha));
+            batch.draw(texture, charactersX + 585, charactersY + 132, -texture.getWidth(), texture.getHeight());
+
+            texture = ImageHandler.images.get("menu/shadowrat");
+            batch.setColor(1, 1, 1, -0.25f + (1 + shadowRatAlpha));
+            batch.draw(texture, charactersX - 13, charactersY + 140);
         }
 
         //character buttons box
-        if (customNightAlpha > 0){
-            customNightAIBox(batch, data, ImageHandler.images.get("menu/ai_box"), r, b, customNightAlpha * (1 - oldMenuAlpha));
-            customNightAIBox(batch, data, ImageHandler.images.get("menu/old/ai_box"), r, b, customNightAlpha * oldMenuAlpha);
+        if (nightType == 0){
+            customNightAIBox(batch, data, ImageHandler.images.get("menu/ai_box"), r, b, (1 - oldMenuAlpha));
+            customNightAIBox(batch, data, ImageHandler.images.get("menu/old/ai_box"), r, b, oldMenuAlpha);
             batch.setColor(1, 1, 1, 1);
         }
 
-        if (shadowNightAlpha > 0){
-            shadowNightAIBox(batch, data, "menu/ai_box_", r, b, shadowNightAlpha * (1 - oldMenuAlpha));
-            shadowNightAIBox(batch, data, "menu/old/ai_box_", r, b, shadowNightAlpha * oldMenuAlpha);
+        if (nightType == 1){
+            shadowNightAIBox(batch, data, "menu/ai_box_", r, b, (1 - oldMenuAlpha));
+            shadowNightAIBox(batch, data, "menu/old/ai_box_", r, b, oldMenuAlpha);
             batch.setColor(1, 1, 1, 1);
         }
 
@@ -1083,14 +1046,12 @@ public class Menu {
 
         menuFontTitle.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         menuFontTitle.setColor(r, 0, b, 1);
-        menuFontTitle.draw(batch, nightType == 0 ? "Custom Night" : nightType == 1 ? "The Dreamscape" : "Monstergami Night", 24, 768 - 24);
+        menuFontTitle.draw(batch, nightType == 0 ? "Custom Night" : "Shadow Night", 24, 768 - 24);
         if (layoutModeTemp != null) menuFontTitle.draw(batch, modeName, 433 - layoutModeTemp.width / 2, 84);
 
         menuFontLabel.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-        menuFontLabel.setColor(r, 0, b, customNightAlpha);
-        menuFontLabel.draw(batch, "Click or scroll to adjust AI", 24, 696);
-        menuFontLabel.setColor(r, 0, b, shadowNightAlpha);
-        menuFontLabel.draw(batch, "Click to toggle AI", 24, 696);
+        menuFontLabel.setColor(r, 0, b, 1);
+        menuFontLabel.draw(batch, nightType == 0 ? "Click or scroll to adjust AI" : "Click to toggle AI", 24, 696);
 
         //Deluxe Menu UI
         float alpha = 1 - oldMenuAlpha;
@@ -1130,7 +1091,7 @@ public class Menu {
         yPos -= 36;
         menuFontLabel.draw(batch, "Faulty Flashlight", xPosLabel, yPos);
         yPos -= 36;
-        menuFontLabel.draw(batch, nightType == 0 ? "Monstergami" : "Twitchy Cat", xPosLabel, yPos);
+        menuFontLabel.draw(batch, nightType == 0 ? "Monster Candy" : "Shadow Candy", xPosLabel, yPos);
         yPos -= 36;
         menuFontLabel.draw(batch, "All Challenges", xPosLabel, yPos);
 
@@ -1266,16 +1227,16 @@ public class Menu {
         texture = ImageHandler.images.get("menu/nightArrow");
         if (arrowHovered) batch.setColor(1, 1, 1, 1);
         else batch.setColor(r, 0, b, 1);
-        batch.draw(texture, nightType == 0 ? 256 : 310, 712);
+        batch.draw(texture, 260, 712);
 
         //game mode
-        if (customNightAlpha > 0){
-            if (rightArrow && nightType == 0) batch.setColor(1, 1, 1, customNightAlpha * (1 - oldMenuAlpha));
-            else batch.setColor(r, 0, b, customNightAlpha * (1 - oldMenuAlpha));
+        if (nightType == 0){
+            if (rightArrow) batch.setColor(1, 1, 1, (1 - oldMenuAlpha));
+            else batch.setColor(r, 0, b, (1 - oldMenuAlpha));
             batch.draw(texture, rightArrowPosition, 54);
 
-            if (leftArrow && nightType == 0) batch.setColor(1, 1, 1, customNightAlpha * (1 - oldMenuAlpha));
-            else batch.setColor(r, 0, b, customNightAlpha * (1 - oldMenuAlpha));
+            if (leftArrow) batch.setColor(1, 1, 1, (1 - oldMenuAlpha));
+            else batch.setColor(r, 0, b, (1 - oldMenuAlpha));
             batch.draw(texture, leftArrowPosition + 24, 54, -24, 28);
         }
 
@@ -1447,7 +1408,7 @@ public class Menu {
                 data.CatAI = 10;
                 data.VinnieAI = 15;
             }
-            case "Rat & Cat Theater" -> {
+            case "Theater Trauma" -> {
                 data.RatAI = 20;
                 data.CatAI = 20;
                 data.VinnieAI = 20;
@@ -1519,10 +1480,14 @@ public class Menu {
     private static void shadowNightAIBox(SpriteBatch batch, Data data, String textureName, float r, float b, float alpha){
         Texture texture = ImageHandler.images.get(textureName + (data.ShadowRatAI ? "on" : "off"));
         batch.setColor(r, 0, b, -0.25f + (1 + shadowRatButtonAlpha) * alpha);
-        batch.draw(texture, 148 + charactersX, 274 + charactersY);
+        batch.draw(texture, 132 + charactersX, 278 + charactersY);
 
         texture = ImageHandler.images.get(textureName + (data.ShadowCatAI ? "on" : "off"));
         batch.setColor(r, 0, b, -0.25f + (1 + shadowCatButtonAlpha) * alpha);
-        batch.draw(texture, 524 + charactersX, 274 + charactersY);
+        batch.draw(texture, 347 + charactersX, 278 + charactersY);
+
+        texture = ImageHandler.images.get(textureName + (data.ShadowVinnieAI ? "on" : "off"));
+        batch.setColor(r, 0, b, -0.25f + (1 + shadowVinnieButtonAlpha) * alpha);
+        batch.draw(texture, 562 + charactersX, 278 + charactersY);
     }
 }
