@@ -103,6 +103,7 @@ public class Menu {
     private static boolean oldMenu;
     private static boolean nightMusic;
     private static boolean menuMusic;
+    private static String menuMusicName;
 
     private static float oldMenuAlpha;
     public static int oldMenuContext;
@@ -397,14 +398,22 @@ public class Menu {
             if (arrowHovered) {
                 arrowHovered = false;
                 modeSwitch = true;
+                nightType++;
+                if (nightType == 3) nightType = 0;
+
+                if (nightType != 0 && data.oldMenu && oldMenuContext == 0) oldMenuContext = 1;
+
                 if (nightType == 1) {
-                    nightType = 0;
-                    pitchTarget = 1;
-                } else {
-                    nightType = 1;
-                    if (data.oldMenu && oldMenuContext == 0) oldMenuContext = 1;
                     pitchTarget = 0.75f;
+                } else {
+                    pitchTarget = 1;
                 }
+
+                if (nightType == 0 || nightType == 2) {
+                    playDeluxe = true;
+                    audioClass.stop(menuMusicName);
+                }
+
                 audioClass.play("thunder");
                 whiteAlpha = 1;
                 writeConfig = true;
@@ -663,15 +672,18 @@ public class Menu {
                 data.stars.get(s).setVisibility(nightType, data.saveData.modes.get(s).beatType != 0);
             }
 
+            if (nightType == 0 || nightType == 1) menuMusicName = "deluxeMenu";
+            else menuMusicName = "candysMenu";
+
             if (playDeluxe && stateManager.getState() == StateManager.State.MENU){
-                audioClass.play("deluxeMenu");
-                audioClass.loop("deluxeMenu", true);
+                audioClass.play(menuMusicName);
+                audioClass.loop(menuMusicName, true);
                 playDeluxe = false;
             }
 
-            audioClass.setVolume("deluxeMenu", volume * 0.75f);
+            audioClass.setVolume(menuMusicName, volume * 0.75f);
             if (pitchTarget != 0){
-                audioClass.setPitch("deluxeMenu", pitchTarget);
+                audioClass.setPitch(menuMusicName, pitchTarget);
                 pitchTarget = 0;
             }
 
@@ -756,7 +768,7 @@ public class Menu {
                 || (oldMenuContext == 1 && data.challenge4)
                 || (oldMenuContext == 2 && data.menuMusic)
                 || (oldMenuContext == 3 && data.expandedPointer)
-                || mode4 || challenge4 || menuMusic || expandedPointer){
+                || mode4 || challenge4 || Menu.menuMusic || expandedPointer){
                 button4Alpha += time * 3;
                 if (button4Alpha > 0.25f) button4Alpha = 0.25f;
             } else {
@@ -974,8 +986,8 @@ public class Menu {
         }
         screenBuffer.begin();
 
-        float r = nightType == 0 ? 1 : 0.6f;
-        float b = nightType == 0 ? 0.25f : 1;
+        float r = nightType == 0 || nightType == 2 ? 1 : 0.6f;
+        float b = nightType == 0 || nightType == 2 ? 0.25f : 1;
 
         //static
         Texture texture = ImageHandler.images.get("Static/Static" + ((int) staticScreen + 1));
@@ -992,18 +1004,21 @@ public class Menu {
             texture = ImageHandler.images.get("menu/candy/monster/" + (int) (candyFrame + 1));
             texture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
             batch.setColor(1, 1, 1, candyAlpha);
-            batch.draw(texture, charactersX + 80, charactersY + 190, 500, 500);
+            batch.draw(texture, charactersX + 187, charactersY + 190);
 
-            texture = ImageHandler.images.get("menu/newVinnie");
-            batch.setColor(1, 1, 1, -0.25f + (1 + vinnieAlpha));
-            batch.draw(texture, charactersX + 438, charactersY + 149);
+            texture = ImageHandler.images.get("menu/vinnie");
+            float color = 0.5f + vinnieAlpha;
+            batch.setColor(color, color, color, 1);
+            batch.draw(texture, charactersX + 450, charactersY + 120);
 
-            texture = ImageHandler.images.get("menu/newCat");
-            batch.setColor(1, 1, 1, -0.25f + (1 + catAlpha));
+            texture = ImageHandler.images.get("menu/cat");
+            color = 0.5f + catAlpha;
+            batch.setColor(color, color, color, 1);
             batch.draw(texture, charactersX + 280, charactersY + 153);
 
-            texture = ImageHandler.images.get("menu/newRat");
-            batch.setColor(1, 1, 1, -0.25f + (1 + ratAlpha));
+            texture = ImageHandler.images.get("menu/rat");
+            color = 0.5f + ratAlpha;
+            batch.setColor(color, color, color, 1);
             batch.draw(texture, charactersX - 13, charactersY + 140);
         }
 
@@ -1012,18 +1027,21 @@ public class Menu {
             texture = ImageHandler.images.get("menu/candy/shadow/" + (int) (candyFrame + 1));
             texture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
             batch.setColor(1, 1, 0.75f, candyAlpha);
-            batch.draw(texture, charactersX + 94, charactersY + 175, 500, 500);
+            batch.draw(texture, charactersX + 187, charactersY + 184);
 
             texture = ImageHandler.images.get("menu/shadowvinnie");
-            batch.setColor(1, 1, 1, -0.25f + (1 + shadowVinnieAlpha));
+            float color = 0.5f + shadowVinnieAlpha;
+            batch.setColor(color, color, color, 1);
             batch.draw(texture, charactersX + 438, charactersY + 149);
 
             texture = ImageHandler.images.get("menu/shadowcat");
-            batch.setColor(1, 1, 1, -0.25f + (1 + shadowCatAlpha));
-            batch.draw(texture, charactersX + 585, charactersY + 132, -texture.getWidth(), texture.getHeight());
+            color = 0.5f + shadowCatAlpha;
+            batch.setColor(color, color, color, 1);
+            batch.draw(texture, charactersX + 586, charactersY + 134, -texture.getWidth(), texture.getHeight());
 
             texture = ImageHandler.images.get("menu/shadowrat");
-            batch.setColor(1, 1, 1, -0.25f + (1 + shadowRatAlpha));
+            color = 0.5f + shadowRatAlpha;
+            batch.setColor(color, color, color, 1);
             batch.draw(texture, charactersX - 13, charactersY + 140);
         }
 
@@ -1046,7 +1064,11 @@ public class Menu {
 
         menuFontTitle.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         menuFontTitle.setColor(r, 0, b, 1);
-        menuFontTitle.draw(batch, nightType == 0 ? "Custom Night" : "Shadow Night", 24, 768 - 24);
+        String title;
+        if (nightType == 0) title = "Custom Night";
+        else if (nightType == 1) title = "Shadow Night";
+        else title = "Candy's Night";
+        menuFontTitle.draw(batch, title, 24, 768 - 24);
         if (layoutModeTemp != null) menuFontTitle.draw(batch, modeName, 433 - layoutModeTemp.width / 2, 84);
 
         menuFontLabel.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
@@ -1091,7 +1113,7 @@ public class Menu {
         yPos -= 36;
         menuFontLabel.draw(batch, "Faulty Flashlight", xPosLabel, yPos);
         yPos -= 36;
-        menuFontLabel.draw(batch, nightType == 0 ? "Monster Candy" : "Shadow Candy", xPosLabel, yPos);
+        menuFontLabel.draw(batch, nightType == 0 ? "Monster Candy" : nightType == 1 ? "Shadow Candy" : "Shadow Challenge", xPosLabel, yPos);
         yPos -= 36;
         menuFontLabel.draw(batch, "All Challenges", xPosLabel, yPos);
 
@@ -1330,13 +1352,13 @@ public class Menu {
 
     private static float nightCharacterAlpha(boolean condition2, float alpha){
         if (condition2) {
-            if (alpha < 0.25f) {
-                alpha += Gdx.graphics.getDeltaTime() * 2;
-                if (alpha > 0.25f) alpha = 0.25f;
+            if (alpha < 0.5f) {
+                alpha += Gdx.graphics.getDeltaTime() * 4;
+                if (alpha > 0.5f) alpha = 0.5f;
             }
         } else {
             if (alpha > 0) {
-                alpha -= Gdx.graphics.getDeltaTime() * 2;
+                alpha -= Gdx.graphics.getDeltaTime() * 4;
                 if (alpha < 0) alpha = 0;
             }
         }

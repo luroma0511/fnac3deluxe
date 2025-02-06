@@ -100,7 +100,7 @@ public class Game {
         bedBackButtonPixmap = ImageHandler.loadImageBuffer("game/Buttons/UnderBedBack");
     }
 
-    public static void start(Data data, AudioClass audioClass){
+    public static void start(AudioClass audioClass){
         audioClass.stopAllSounds();
         if (random == null) {
             random = new Random();

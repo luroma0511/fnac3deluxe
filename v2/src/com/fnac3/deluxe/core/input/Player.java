@@ -325,7 +325,7 @@ public class Player {
 
             x = 0;
             y = 167;
-            if (ShadowCat.room == 2 && !ShadowCat.bedSpotted) {
+            if (ShadowCat.active && ShadowCat.room == 2 && !ShadowCat.bedSpotted) {
                 if (ShadowCat.side == 0) {
                     texture = ImageHandler.images.get("game/Shadow Cat/New/Under Bed/Bed1");
                 } else {
@@ -337,7 +337,27 @@ public class Player {
                         x, x + texture.getWidth(),
                         y, y + texture.getHeight())
                         && Monstergami.side != 3 && !freeze;
-                return ShadowCat.bedSpotted;
+                if (ShadowCat.bedSpotted){
+                    return true;
+                }
+            }
+
+            x = 0;
+            y = 169;
+            if (ShadowVinnie.room == 2 && !ShadowVinnie.bedSpotted) {
+                if (ShadowVinnie.side == 0) {
+                    texture = ImageHandler.images.get("game/Shadow Vinnie/Under Bed/Bed1");
+                } else {
+                    texture = ImageHandler.images.get("game/Shadow Vinnie/Under Bed/Bed2");
+                    x = 1204;
+                    y = 180;
+                }
+
+                ShadowVinnie.bedSpotted = Player.mouseOver(mx, my,
+                        x, x + texture.getWidth(),
+                        y, y + texture.getHeight())
+                        && Monstergami.side != 3 && !freeze;
+                return ShadowVinnie.bedSpotted;
             }
         }
         return false;
@@ -377,8 +397,10 @@ public class Player {
 
     public static void tapeFunctionality(Data data, AudioClass audioClass){
 
-        boolean notWeaselDreamscape = Menu.nightType == 1 && !ShadowRat.tapeWeasel && !ShadowCat.tapeWeasel;
-        boolean notWeaselCustomNight = Menu.nightType == 0 && !Rat.tapeWeasel && !Vinnie.tapeWeasel;
+        boolean notWeaselDreamscape = Menu.nightType == 1
+                && !ShadowRat.tapeWeasel && !ShadowCat.tapeWeasel && !ShadowVinnie.tapeWeasel;
+        boolean notWeaselCustomNight = Menu.nightType == 0
+                && !Rat.tapeWeasel && !Cat.tapeWeasel && !Vinnie.tapeWeasel;
         boolean monstergamiNight = Menu.nightType == 2;
 
         if (Monstergami.tapeStolen && !tapeStolen){
@@ -394,6 +416,10 @@ public class Player {
             Rat.tapeWeasel = false;
             Rat.tapePosition = 0;
             Rat.tapeSpotted = true;
+
+            Cat.tapeWeasel = false;
+            Cat.tapePosition = 0;
+            Cat.tapeSpotted = true;
 
             Vinnie.tapeWeasel = false;
             Vinnie.tapePosition = 0;
@@ -428,8 +454,16 @@ public class Player {
                 ShadowCat.timeUntilWeasel = 0;
             }
 
+            if (ShadowVinnie.timeUntilWeasel > 0){
+                ShadowVinnie.timeUntilWeasel = 0;
+            }
+
             if (Rat.timeUntilWeasel > 0){
                 Rat.timeUntilWeasel = 0;
+            }
+
+            if (Cat.timeUntilWeasel > 0){
+                Cat.timeUntilWeasel = 0;
             }
 
             if (Vinnie.timeUntilWeasel > 0){
@@ -439,8 +473,10 @@ public class Player {
 
         if (tape.isPlaying()){
             tapePosition = tape.getPosition();
-            if (!tapePlay || (Menu.nightType == 0 && (Rat.tapeWeasel || Vinnie.tapeWeasel))
-                    || (Menu.nightType == 1 && (ShadowRat.tapeWeasel || ShadowCat.tapeWeasel))){
+            if (!tapePlay || (Menu.nightType == 0
+                    && (Rat.tapeWeasel || Cat.tapeWeasel || Vinnie.tapeWeasel))
+                    || (Menu.nightType == 1
+                    && (ShadowRat.tapeWeasel || ShadowCat.tapeWeasel || ShadowVinnie.tapeWeasel))){
                 tape.stop();
             }
         } else if (tapePlay && playPosition == 3 && (notWeaselDreamscape || notWeaselCustomNight || monstergamiNight)){
@@ -584,7 +620,7 @@ public class Player {
     }
 
     public static void turningAround(AudioClass audioClass){
-        float value = Gdx.graphics.getDeltaTime() * 30;
+        float value = Gdx.graphics.getDeltaTime() * 35;
         if (room != roomTarget){
             if (turningPosition == 1) {
                 if (room == 0) {
@@ -714,17 +750,18 @@ public class Player {
         switch (snapToSide){
             case 0:
                 snapTo[0] = 60;
-                if (Vinnie.attack) snapTo[1] = 246;
+                if (Vinnie.attack || ShadowVinnie.attack) snapTo[1] = 246;
                 else snapTo[1] = 225;
                 break;
             case 1:
                 snapTo[0] = 1005;
                 if (Vinnie.attack) snapTo[1] = 180;
+                else if (ShadowVinnie.attack) snapTo[1] = 236;
                 else snapTo[1] = 140;
                 break;
             case 2:
                 snapTo[0] = 1980;
-                snapTo[1] = 250;
+                snapTo[1] = 256;
                 break;
         }
 

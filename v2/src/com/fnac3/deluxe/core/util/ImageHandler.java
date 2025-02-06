@@ -3,12 +3,7 @@ package com.fnac3.deluxe.core.util;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.fnac3.deluxe.core.data.Data;
-import com.fnac3.deluxe.core.enemy.Cat;
-import com.fnac3.deluxe.core.enemy.Monstergami;
-import com.fnac3.deluxe.core.enemy.Rat;
-import com.fnac3.deluxe.core.enemy.ShadowCat;
-import com.fnac3.deluxe.core.enemy.ShadowRat;
-import com.fnac3.deluxe.core.enemy.Vinnie;
+import com.fnac3.deluxe.core.enemy.*;
 import com.fnac3.deluxe.core.state.Game;
 import com.fnac3.deluxe.core.state.Menu;
 import com.fnac3.deluxe.core.state.StateManager;
@@ -115,7 +110,7 @@ public class ImageHandler {
 
             switch (Menu.nightType){
                 case 0 -> customNightLoad();
-                case 1 -> dreamscapeLoad(data);
+                case 1 -> deepscape(data);
                 case 2 -> monstergamiLoad();
             }
         } else if (stateManager.getState() == StateManager.State.MENU){
@@ -143,9 +138,9 @@ public class ImageHandler {
         add("menu/help");
         add("menu/nightArrow");
 
-        add("menu/newRat");
-        add("menu/newCat");
-        add("menu/newVinnie");
+        add("menu/rat");
+        add("menu/cat");
+        add("menu/vinnie");
         add("menu/shadowrat");
         add("menu/shadowcat");
         add("menu/shadowvinnie");
@@ -223,7 +218,7 @@ public class ImageHandler {
         add(prefix + "Stop3");
     }
 
-    public static void dreamscapeLoad(Data data){
+    public static void deepscape(Data data){
         add("game/ShadowBattleOverlay");
 
         String prefix = "game/Shadow Rat/";
@@ -293,7 +288,32 @@ public class ImageHandler {
             tapeAssetsLoad(prefix, 12);
             add("game/gameover/shadowCat");
         }
-        add("game/room/origami");
+        if (ShadowVinnie.ai != 0){
+            prefix = "game/Shadow Vinnie/";
+
+            for (int i = 0; i < 48; i++){
+                add(prefix + "Battle/Left/" + i);
+                add(prefix + "Battle/Middle/" + i);
+                add(prefix + "Battle/Right/" + i);
+            }
+            for (int i = 1; i <= 21; i++) {
+                add(prefix + "Battle/Jump/Left/" + i);
+            }
+
+            for (int i = 1; i <= 19; i++) {
+                add(prefix + "Battle/Jump/Right/" + i);
+            }
+
+            for (int i = 1; i <= 6; i++) {
+                add(prefix + "Jumpscare/Jumpscare" + i);
+            }
+
+            bedAssetsLoad(prefix);
+            tapeAssetsLoad(prefix, 14);
+            doorAssetsLoad(prefix);
+
+            add("game/gameover/shadowVinnie");
+        }
 
         monstergamiLoad();
     }
@@ -323,6 +343,12 @@ public class ImageHandler {
 
         prefix = "game/Cat/";
         if (Cat.ai != 0) {
+            triangleAttackLoad(prefix);
+
+            for (int i = 1; i <= 35; i++) {
+                add(prefix + "Jumpscare/Room Jumpscare/Jumpscare" + i);
+            }
+
             for (int i = 1; i <= 29; i++) {
                 add(prefix + "Jumpscare/Bed Jumpscare/Jumpscare" + i);
             }
@@ -332,8 +358,8 @@ public class ImageHandler {
                 add(prefix + "Retreat/Retreat Right/Retreat" + i);
             }
 
-            add(prefix + "Under Bed/Bed1");
-            add(prefix + "Under Bed/Bed2");
+            tapeAssetsLoad(prefix, 12);
+            bedAssetsLoad(prefix);
 
             add("game/gameover/cat1");
             add("game/gameover/cat2");

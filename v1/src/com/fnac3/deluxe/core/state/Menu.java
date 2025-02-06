@@ -1041,15 +1041,15 @@ public class Menu {
             //characters
             texture = ImageHandler.images.get("menu/vinnie");
             batch.setColor(1, 1, 1, -0.25f + (1 + vinnieAlpha) * customNightAlpha);
-            batch.draw(texture, 450 + charactersX, 120 + charactersY);
+            batch.draw(texture, charactersX + 450, charactersY + 120);
 
             texture = ImageHandler.images.get("menu/cat");
             batch.setColor(1, 1, 1, -0.25f + (1 + catAlpha) * customNightAlpha);
-            batch.draw(texture, 275 + charactersX, 163 + charactersY);
+            batch.draw(texture, charactersX + 280, charactersY + 153);
 
             texture = ImageHandler.images.get("menu/rat");
             batch.setColor(1, 1, 1, -0.25f + (1 + ratAlpha) * customNightAlpha);
-            batch.draw(texture, charactersX, 166 + charactersY);
+            batch.draw(texture, charactersX - 13, charactersY + 140);
         }
 
         //2. shadow night
@@ -1255,6 +1255,7 @@ public class Menu {
         Star star = data.stars.get(modeName);
         texture = ImageHandler.images.get("menu/star");
         texture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        System.out.println(star.color[0]);
         batch.setColor(star.color[0], star.color[1], star.color[2], star.visibility + star.alphaVisibility);
         batch.draw(texture,
                 433 - star.size / 2,

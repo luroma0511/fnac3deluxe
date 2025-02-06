@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.fnac3.deluxe.core.data.Data;
 import com.fnac3.deluxe.core.input.Player;
+import com.fnac3.deluxe.core.state.Game;
 import com.fnac3.deluxe.core.util.AudioClass;
 import com.fnac3.deluxe.core.util.ImageHandler;
 
@@ -63,7 +64,7 @@ public class Rat {
     }
 
     public static void update(Random random, Data data, AudioClass audioClass){
-        pause = Vinnie.room != 0 || (Cat.room != 2 && Cat.room != 4) || Monstergami.side != -1 || Player.freeze;
+        pause = Vinnie.room != 0 || Cat.room == 1 || Cat.room == 3 || Monstergami.side != -1 || Player.freeze;
         if (jumpscareI == 0) {
             switch (room) {
                 case 0:
@@ -96,7 +97,7 @@ public class Rat {
                 jumpscareType = "bedJumpscare";
                 Player.blacknessTimes = 1;
                 Player.blacknessMultiplier = 5;
-                jumpscareTime = 1.5f;
+                jumpscareTime = 1.35f;
             }
             if (!jumpscareType.isEmpty()) {
                 audioClass.play(jumpscareType);
@@ -471,7 +472,7 @@ public class Rat {
                 }
             }
             if (cooldownTimer <= 0 && Player.blackness == 1 && Player.blacknessTimes == 0){
-                cooldownTimer = 3 + 0.3f * (20 - ai);
+                cooldownTimer = 4;
                 room = 1;
                 doorLock = false;
                 if (side == -1){
@@ -489,10 +490,10 @@ public class Rat {
                 attackPosition = 0;
                 attackPositionTarget = 0;
                 patienceHealthTimer = 2f;
-                patienceTimer = 0.85f + 0.025f * (20 - ai);
+                patienceTimer = 0.75f;
                 Player.blacknessTimes = 3;
                 Player.blacknessMultiplier = 6;
-                timeToFlash = 0.7f + (0.1f * random.nextInt(5));
+                timeToFlash = 0.85f;
                 chanceToSkip = 10;
                 knocks = 0;
                 knockTimer = 0;
@@ -505,6 +506,7 @@ public class Rat {
         audioClass.play("spotted");
         peekSpotted = false;
         doorCooldown = (float) (4 + 0.3 * (20 - ai));
+        if (Game.doorTurn != 0) cooldownTimer = 5;
         doorLock = false;
     }
 
@@ -541,10 +543,11 @@ public class Rat {
         if (attackTime == 0 && !attack && Player.blacknessTimes == 0) {
             Player.blacknessMultiplier = 1.25f;
             room = 2;
+            if (Vinnie.ai != 0) Game.doorTurn = 1;
             dontSoundShake = false;
             shaking = false;
-            bedPatienceTimer = 1.25f + 0.1f * (20 - ai);
-            cooldownTimer = 10 + 0.3f * (20 - ai);
+            bedPatienceTimer = 5;
+            cooldownTimer = 10;
             audioClass.play("crawl");
             tapeSpotted = false;
             if (!tapeWeasel && !Player.tapeStolen) {
@@ -552,30 +555,11 @@ public class Rat {
                 if (data.hardCassette) timeUntilWeasel = 0.01f;
                 else timeUntilWeasel = 0.25f + random.nextInt(2) + random.nextFloat() + (0.1f * (20 - ai));
             }
-            if (data.challenge4
-                    && Monstergami.pause
-                    && !Monstergami.wait
-                    && Vinnie.room != 1
-                    && Monstergami.cooldownTimer == 0){
-                Monstergami.pause = false;
-                cooldownTimer -= 2;
-            }
 
             if (Cat.room == 2){
-                if (Cat.side == 0){
-                    side = 2;
-                } else {
-                    side = 0;
-                }
-            } else if (Vinnie.room == 2) {
-                if (Vinnie.side == 0){
-                    side = 2;
-                } else {
-                    side = 0;
-                }
-            } else {
-                side = 2 * random.nextInt(2);
-            }
+                if (Cat.side == 0) side = 2;
+                else side = 0;
+            } else side = 2 * random.nextInt(2);
         }
 
         if (attackTime != 0 && !attack && Player.flashlightAlpha > 0 && !Player.turningAround && Player.room == 0) {
@@ -722,8 +706,6 @@ public class Rat {
                 tapeSpotted = false;
                 timeToFlash = 2.4f;
                 Player.blacknessMultiplier = 6;
-                attackPosition = 0;
-                attackPositionTarget = 0;
             } else {
                 jumpscareI = 1;
             }

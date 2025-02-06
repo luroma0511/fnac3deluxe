@@ -13,12 +13,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.fnac3.deluxe.core.FNaC3Deluxe;
 import com.fnac3.deluxe.core.data.Data;
 import com.fnac3.deluxe.core.discord.Discord;
-import com.fnac3.deluxe.core.enemy.Cat;
-import com.fnac3.deluxe.core.enemy.Monstergami;
-import com.fnac3.deluxe.core.enemy.Rat;
-import com.fnac3.deluxe.core.enemy.ShadowCat;
-import com.fnac3.deluxe.core.enemy.ShadowRat;
-import com.fnac3.deluxe.core.enemy.Vinnie;
+import com.fnac3.deluxe.core.enemy.*;
 import com.fnac3.deluxe.core.util.AudioClass;
 import com.fnac3.deluxe.core.util.ImageHandler;
 import com.fnac3.deluxe.core.util.SoundFiles;
@@ -81,6 +76,7 @@ public class Loading {
                 ShadowRat.active = data.ShadowRatAI;
                 ShadowCat.active = data.ShadowCatAI;
                 ShadowCat.twitchyCat = data.challenge4;
+                ShadowVinnie.ai = data.ShadowVinnieAI ? 20 : 0;
             }
             Monstergami.active = data.challenge4 && nightType != 1;
 

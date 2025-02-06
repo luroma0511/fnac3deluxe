@@ -24,6 +24,7 @@ public class ShadowRat {
     public static int attackPosition;
     public static float twitchPosition;
     public static boolean shaking;
+    public static boolean dontSoundShake;
     public static boolean twitchingNow;
     public static int attackPositionTarget;
     public static float moveToPosition;
@@ -43,7 +44,7 @@ public class ShadowRat {
     public static float tapePosition;
     public static boolean jumpscare;
     public static float jumpscareTimer;
-    public static float jumpscareTime = 0.9f;
+    public static float jumpscareTime;
     public static int jumpscareI;
     public static boolean pause;
 
@@ -64,7 +65,7 @@ public class ShadowRat {
     }
 
     public static void update(Random random, Data data, AudioClass audioClass){
-        pause = ShadowCat.room == 1 || ShadowCat.room == 3 || Monstergami.side != -1 || Player.freeze;
+        pause = ShadowVinnie.room != 0 || ShadowCat.room == 1 || ShadowCat.room == 3 || Monstergami.side != -1 || Player.freeze;
         if (jumpscareI == 0) {
             switch (room) {
                 case 0:
@@ -113,17 +114,6 @@ public class ShadowRat {
             tapePosition -= Gdx.graphics.getDeltaTime() * 30;
             if (tapePosition < 0){
                 tapePosition = 0;
-            }
-        }
-
-        if ((room == 1 && attack) || (room == 3 && timeToFlash > 0)) {
-            if (shaking && !twitchingNow) {
-                audioClass.play("twitch");
-                audioClass.loop("twitch", true);
-                twitchingNow = true;
-            } else if (!shaking && twitchingNow) {
-                audioClass.stop("twitch");
-                twitchingNow = false;
             }
         }
 
@@ -377,11 +367,10 @@ public class ShadowRat {
             hitboxPosition[1] = -1;
         }
         tapeWeasel = false;
-        doorCooldown = 3;
+        doorCooldown = 4;
         cooldownTimer = 5;
         knocks = 0;
         knockTimer = 0;
-        bedPatienceTimer = 1;
         room = 0;
         teleports = 0;
         teleportTime = 0;
@@ -390,6 +379,7 @@ public class ShadowRat {
         side = -1;
         attack = false;
         shaking = false;
+        dontSoundShake = false;
         twitchingNow = false;
         leaveRoom = false;
         doorAnimation = 0;
@@ -417,6 +407,16 @@ public class ShadowRat {
                 doorLock = true;
                 if (cooldownTimer > 0) {
                     side = random.nextInt(3);
+
+                    if (ShadowVinnie.ai == 0 || ShadowVinnie.side == -1) {
+                        side = random.nextInt(3);
+                    } else if (ShadowVinnie.side == 0){
+                        side = 1 + random.nextInt(2);
+                    } else if (ShadowVinnie.side == 1){
+                        side = 2 * random.nextInt(2);
+                    } else if (ShadowVinnie.side == 2){
+                        side = random.nextInt(2);
+                    }
 
                     if (cooldownTimer > 0.375f) {
                         knockHard = (int) cooldownTimer <= 3;
@@ -476,7 +476,8 @@ public class ShadowRat {
     public static void doorRetreat(AudioClass audioClass){
         audioClass.play("spotted");
         peekSpotted = false;
-        doorCooldown = 3;
+        doorCooldown = 4;
+        if (Game.doorTurn != 0) cooldownTimer = 5;
         doorLock = false;
     }
 
@@ -515,8 +516,10 @@ public class ShadowRat {
         if (teleports == teleportTarget && !attack && Player.blacknessTimes == 0) {
             Player.blacknessMultiplier = 1.25f;
             room = 2;
+            if (ShadowVinnie.ai != 0) Game.doorTurn = 1;
+            dontSoundShake = false;
             shaking = false;
-            bedPatienceTimer = 1.25f;
+            bedPatienceTimer = 4;
             cooldownTimer = 10;
             audioClass.play("crawl");
             tapeSpotted = false;
@@ -559,7 +562,7 @@ public class ShadowRat {
                     Player.snapPosition = false;
                     if (teleports == teleportTarget) {
                         attack = false;
-                        audioClass.stop("twitch");
+                        dontSoundShake = true;
                         audioClass.play("thunder");
                         Player.blacknessTimes = 3;
                         Player.blacknessMultiplier = 6;
@@ -675,9 +678,7 @@ public class ShadowRat {
 
     public static void bedMechanic(Data data, AudioClass audioClass){
         if (cooldownTimer > 0 && !Player.freeze){
-            if (cooldownTimer > 6 || Monstergami.side == -1) {
-                cooldownTimer -= Gdx.graphics.getDeltaTime();
-            }
+            cooldownTimer -= Gdx.graphics.getDeltaTime();
 
             if (!tapeSpotted && timeUntilWeasel > 0){
                 timeUntilWeasel -= Gdx.graphics.getDeltaTime();
@@ -699,14 +700,15 @@ public class ShadowRat {
                 }
             }
 
-            if (bedPatienceTimer > 0 && bedSpotted){
+            if (Player.room == 1 && !Player.turningAround && bedPatienceTimer > 0){
                 bedPatienceTimer -= Gdx.graphics.getDeltaTime();
-                if (bedPatienceTimer < 0){
+                if (bedPatienceTimer <= 0){
                     bedPatienceTimer = 0;
+                    jumpscareI = 1;
                 }
             }
 
-            if (Player.room == 1 && !Player.turningAround && bedPatienceTimer == 0){
+            if (bedPatienceTimer == 0){
                 jumpscareI = 1;
             }
 
@@ -749,7 +751,7 @@ public class ShadowRat {
                     timeToFlash = 0;
                     attack = false;
                     Player.freeze = true;
-                    audioClass.stop("twitch");
+                    dontSoundShake = true;
                     audioClass.play("thunder");
                     Player.blacknessTimes = 3;
                     Player.blacknessMultiplier = 6;
@@ -769,8 +771,9 @@ public class ShadowRat {
                 Player.freeze = false;
                 shaking = false;
                 twitchingNow = false;
+                dontSoundShake = false;
                 room = 0;
-                doorCooldown = 3;
+                doorCooldown = 4;
                 cooldownTimer = 5;
                 leaveRoom = true;
                 doorAnimation = 18;

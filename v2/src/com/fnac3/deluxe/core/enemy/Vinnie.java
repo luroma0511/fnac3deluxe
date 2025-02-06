@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.fnac3.deluxe.core.data.Data;
 import com.fnac3.deluxe.core.input.Player;
+import com.fnac3.deluxe.core.state.Game;
 import com.fnac3.deluxe.core.util.AudioClass;
 import com.fnac3.deluxe.core.util.ImageHandler;
 
@@ -70,7 +71,7 @@ public class Vinnie {
     }
 
     public static void update(Random random, Data data, AudioClass audioClass){
-        pause = Rat.room != 0 || (Cat.room != 2 && Cat.room != 4) || Monstergami.side != -1 || Player.freeze;
+        pause = Rat.room != 0 || Cat.room == 1 || Cat.room == 3 || Monstergami.side != -1 || Player.freeze;
         if (jumpscareI == 0) {
             vinnieLaughTime -= Gdx.graphics.getDeltaTime();
             if (vinnieLaughTime <= 0){
@@ -749,7 +750,7 @@ public class Vinnie {
                 }
             }
             if (cooldownTimer <= 0 && Player.blackness == 1 && Player.blacknessTimes == 0){
-                cooldownTimer = 3 + 0.3f * (20 - ai);
+                cooldownTimer = 4;
                 room = 1;
                 doorLock = false;
                 if (side == -1){
@@ -764,7 +765,7 @@ public class Vinnie {
                     }
                 }
                 jumps = 3;
-                attackTime = 3.5f;
+                attackTime = 3;
                 attackPosition = 0;
                 patienceHealthTimer = 2;
                 patienceTimer = 0.75f + 0.025f * (20 - ai);
@@ -782,6 +783,7 @@ public class Vinnie {
         audioClass.play("spotted");
         peekSpotted = false;
         doorCooldown = (float) (5 + 0.3 * (20 - ai));
+        if (Game.doorTurn != 1) cooldownTimer = 5;
         doorLock = false;
     }
 
@@ -820,6 +822,7 @@ public class Vinnie {
             shaking = false;
             Player.blacknessMultiplier = 1.25f;
             room = 2;
+            if (Rat.ai != 0) Game.doorTurn = 0;
             dontSoundShake = false;
             bedPatienceTimer = 1.25f + 0.1f * (20 - ai);
             cooldownTimer = 10 + 0.3f * (20 - ai);
@@ -933,7 +936,7 @@ public class Vinnie {
                             Player.snapToSide = side;
                         }
 
-                        timeToFlash = 0.3f + (0.1f * random.nextInt(5)) + (0.0125f * (20 - ai));
+                        timeToFlash = 0.4f + (0.1f * random.nextInt(4)) + (0.0125f * (20 - ai));
                         patienceTimer = 0.75f + 0.025f * (20 - ai);
                         moveToPosition = 2 * (1 + random.nextInt(7));
                         if (random.nextInt(2) == 1) {
@@ -990,7 +993,7 @@ public class Vinnie {
                         }
                         jumpTarget = 0;
                         jumpAnimation = 0;
-                        attackTime = 3.5f;
+                        attackTime = 3;
                         if (side == 1 && Cat.side == Player.side) patienceTimer = 3;
                         else patienceTimer = 1f;
                         patienceHealthTimer = 2f;

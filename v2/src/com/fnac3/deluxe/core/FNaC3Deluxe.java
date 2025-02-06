@@ -56,6 +56,7 @@ public class FNaC3Deluxe extends ApplicationAdapter implements InputProcessor {
 		audioClass = new AudioClass();
 		audioClass.createSound("thunder");
 		audioClass.createSound("deluxeMenu");
+		audioClass.createSound("candysMenu");
 		audioClass.createSound("dreamTheme");
 		audioClass.createSound("select");
 		data = new Data();
