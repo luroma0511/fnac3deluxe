@@ -236,15 +236,7 @@ public class Cat {
                 break;
         }
 
-        if (data.laserPointer){
-            if (data.expandedPointer) {
-                hitboxDistance *= 0.8f;
-            } else {
-                hitboxDistance *= 0.6f;
-            }
-        } else if (data.expandedPointer){
-            hitboxDistance *= 1.2f;
-        }
+        hitboxDistance = Utils.setHitboxDistance(data, hitboxDistance);
     }
 
     public static void render(SpriteBatch batch) {

@@ -6,6 +6,7 @@ import com.fnac3.deluxe.core.data.Data;
 import com.fnac3.deluxe.core.input.Player;
 import com.fnac3.deluxe.core.util.AudioClass;
 import com.fnac3.deluxe.core.util.ImageHandler;
+import com.fnac3.deluxe.core.util.Utils;
 
 import java.util.Random;
 
@@ -35,7 +36,6 @@ public class ShadowCat {
     public static int teleportTarget;
     public static boolean bedSpotted;
     public static float patienceTimer;
-    public static float patienceHealthTimer;
     public static float bedPatienceTimer;
     public static boolean tapeSpotted;
     public static float timeUntilWeasel;
@@ -76,37 +76,30 @@ public class ShadowCat {
         float catVolume = audioClass.getVolume("cat");
         float catPitch = audioClass.getPitch("cat");
 
-        if (catAttackMode) {
-            if (!catAttackModeLock && (ShadowRat.room == 0 || ShadowRat.room == 3) && (ShadowVinnie.room == 0 || ShadowVinnie.room == 3)){
-                catAttackModeLock = true;
-            }
+        if (!catAttackMode) {
+            catAttackModeLock = (!ShadowRat.active || ShadowRat.room == 2 || ShadowRat.room == 3)
+                    && (ShadowVinnie.ai == 0 || ShadowVinnie.room == 2 || ShadowVinnie.room == 3);
 
-            if (catAttackModeLock) {
-                if (catVolume < 0.6f) {
-                    audioClass.setVolume("cat", catVolume + Gdx.graphics.getDeltaTime());
-                    if (audioClass.getVolume("cat") > 0.6f) audioClass.setVolume("cat", 0.6f);
-                }
-                if (room != 3) audioClass.setPitch("cat", catPitch + Gdx.graphics.getDeltaTime() / 75);
-                else audioClass.setPitch("cat", catPitch - Gdx.graphics.getDeltaTime() / 10);
+            if (catVolume < 0.15f) {
+                audioClass.setVolume("cat", catVolume + Gdx.graphics.getDeltaTime() / 2);
+                if (audioClass.getVolume("cat") > 0.15f) audioClass.setVolume("cat", 0.15f);
             }
-        } else if (catVolume < 0.15f){
-            audioClass.setVolume("cat", catVolume + Gdx.graphics.getDeltaTime() / 2);
-            if (audioClass.getVolume("cat") > 0.15f) audioClass.setVolume("cat", 0.15f);
+        } else {
+            if (catVolume < 0.6f) {
+                audioClass.setVolume("cat", catVolume + Gdx.graphics.getDeltaTime());
+                if (audioClass.getVolume("cat") > 0.6f) audioClass.setVolume("cat", 0.6f);
+            }
+            if (room != 3) audioClass.setPitch("cat", catPitch + Gdx.graphics.getDeltaTime() / 75);
+            else audioClass.setPitch("cat", catPitch - Gdx.graphics.getDeltaTime() / 10);
         }
 
         if (jumpscareI == 0) {
             switch (room) {
                 case 1:
-                    roomMechanic(random, audioClass);
+                    roomMechanic(data, random, audioClass);
                     break;
                 case 2:
                     bedMechanic(data, random, audioClass);
-                    break;
-                case 3:
-                    crouchMechanic(data, random, audioClass);
-                    break;
-                case 4:
-                    farBedMechanic(random, audioClass);
                     break;
             }
             if (jumpscareI != 0){
@@ -244,15 +237,7 @@ public class ShadowCat {
                 break;
         }
 
-        if (data.laserPointer){
-            if (data.expandedPointer) {
-                hitboxDistance *= 0.8f;
-            } else {
-                hitboxDistance *= 0.6f;
-            }
-        } else if (data.expandedPointer){
-            hitboxDistance *= 1.2f;
-        }
+        hitboxDistance = Utils.setHitboxDistance(data, hitboxDistance);
     }
 
     public static boolean render(SpriteBatch batch){
@@ -370,23 +355,6 @@ public class ShadowCat {
                     texture = "Battle/Second Middle/" + position;
                     x = 815;
                     break;
-                case 4:
-                    lookInRoom = true;
-                    String condition;
-                    if (bedPosition >= 1){
-                        condition = "Retreat" + (int) bedPosition;
-                    } else {
-                        condition = "Shaking" + ((int) twitchPosition + 1);
-                    }
-                    if (side == 0){
-                        texture = "Retreat/Retreat Left/" + condition;
-                        y = 303;
-                    } else if (side == 2){
-                        texture = "Retreat/Retreat Right/" + condition;
-                        x = 2536;
-                        y = 214;
-                    }
-                    break;
             }
             if (texture == null) return false;
             boolean passed = lookInRoom && !Player.turningAround && Player.room == 0;
@@ -405,14 +373,10 @@ public class ShadowCat {
             y = Player.roomPosition[1];
         }
 
-        if (room == 4 && side == 0 && !jumpscare){
-            batch.draw(ImageHandler.images.get("game/room/FullRoomBed"), 0, 0);
-        }
-
         batch.setColor(1, 1, 1, 1);
         batch.draw(ImageHandler.images.get("game/Shadow Cat/New/" + texture), x, y);
 
-        if ((room == 1 || room == 3 || (room == 4 && side == 2)) && !jumpscare){
+        if ((room == 1 || room == 3) && !jumpscare){
             batch.draw(ImageHandler.images.get("game/room/FullRoomBed"), 0, 0);
         }
         return true;
@@ -422,7 +386,7 @@ public class ShadowCat {
         skipped = false;
         catHum = false;
         catAttackMode = true;
-        catAttackModeLock = false;
+        catAttackModeLock = true;
         if (hitboxPosition == null) {
             hitboxPosition = new float[]{-1, -1};
         } else {
@@ -447,14 +411,33 @@ public class ShadowCat {
 
         if (active) {
             side = 2 * random.nextInt(2);
-            cooldownTimer = 10;
+            cooldownTimer = 8;
             attack = false;
             audioClass.play("crawl");
         }
     }
 
-    public static void roomMechanic(Random random, AudioClass audioClass) {
+    public static void roomMechanic(Data data, Random random, AudioClass audioClass) {
         shaking = hitboxHit;
+
+        if (teleports == teleportTarget && !attack && Player.blacknessTimes == 0) {
+            Player.blacknessMultiplier = 1.25f;
+            room = 2;
+            dontSoundShake = false;
+            shaking = false;
+            bedPatienceTimer = 4;
+            cooldownTimer = 20;
+            catHum = false;
+            catAttackMode = false;
+            audioClass.play("crawl");
+            tapeSpotted = false;
+            if (!tapeWeasel) {
+                tapePosition = 12f;
+                if (data.hardCassette) timeUntilWeasel = 0.01f;
+                else timeUntilWeasel = 0.25f + random.nextInt(2) + random.nextFloat();
+            }
+            side = 2 * random.nextInt(2);
+        }
 
         if (attack) {
             if (Player.snapPosition && teleportTime > 0) {
@@ -466,41 +449,40 @@ public class ShadowCat {
 
             if (shaking) {
                 timeToFlash -= Gdx.graphics.getDeltaTime();
-                patienceHealthTimer += Gdx.graphics.getDeltaTime() / 2.5f;
-                if (patienceHealthTimer > 2) patienceHealthTimer = 2;
+                patienceTimer += Gdx.graphics.getDeltaTime();
                 if (timeToFlash <= 0 && teleportTime == 0) {
                     Player.snapPosition = false;
                     shaking = false;
                     Player.blacknessTimes = 1;
                     Player.blacknessMultiplier = 6;
-                    patienceTimer = 1.75f;
 
                     int previousSide = side;
 
-                    if (side == 0 || side == 2) side = 1;
-                    else side = 2 * random.nextInt(2);
+                    side = random.nextInt(2);
+                    if (previousSide == 0) side++;
+                    else if (previousSide == 1) side *= 2;
+
+                    int differenceSide = Math.abs(side - previousSide);
 
                     if (previousSide < side) audioClass.play("dodgeRight");
                     else audioClass.play("dodgeLeft");
 
-                    int difference = previousSide - side;
-                    if (difference == -2 || difference == 2) patienceTimer += 0.75f;
-
-
                     if (teleports == teleportTarget) {
-                        room = 3;
-                        if (!twitchyCat) timeToFlash = 2.75f;
-                        else {
-                            timeToFlash = 0.65f;
-                            patienceHealthTimer = 2f;
-                            middleAttackMoves = 8;
-                        }
-                        attackPosition = 0;
+                        attack = false;
+                        dontSoundShake = true;
+                        audioClass.stop("cat");
+                        audioClass.play("thunder");
+                        Player.blacknessTimes = 3;
+                        Player.blacknessMultiplier = 6;
+                        Player.blacknessDelay = 0.5f;
+                        Player.freeze = true;
                     } else {
-                        teleportTime = 4;
+                        if (ShadowRat.doorCooldown == 0 || ShadowVinnie.doorCooldown == 0) patienceTimer = 3f;
+                        else if (differenceSide == 2) patienceTimer = 2.15f;
+                        else patienceTimer = 1.5f;
+                        teleportTime = 7;
                         teleports++;
-                        patienceHealthTimer = 2f;
-                        timeToFlash = 0.5f;
+                        timeToFlash = 0.4f;
                         attackPosition = 1 + random.nextInt(2);
                     }
                     attackPositionTarget = attackPosition;
@@ -512,14 +494,6 @@ public class ShadowCat {
                     patienceTimer = 0;
                     jumpscareI = 1;
                 }
-
-                if (Player.snapPosition) {
-                    patienceHealthTimer -= Gdx.graphics.getDeltaTime();
-                    if (patienceHealthTimer < 0) {
-                        patienceHealthTimer = 0;
-                        jumpscareI = 1;
-                    }
-                }
             }
 
             if (moveToPosition == 0 && timeToFlash <= 0) {
@@ -527,12 +501,12 @@ public class ShadowCat {
                     Player.snapPosition = true;
                     Player.snapToSide = side;
                 }
-                patienceTimer = 0.65f;
+                patienceTimer = 0.5f;
                 if (random.nextInt(5) == 2 && !skipped){
                     timeToFlash = 0;
                     skipped = true;
                 } else {
-                    timeToFlash = 0.08f + random.nextInt(2) * 0.08f;
+                    timeToFlash = 0.26f - random.nextInt(2) * 0.13f;
                     skipped = false;
                 }
                 moveToPosition = 3;
@@ -594,8 +568,9 @@ public class ShadowCat {
 
     public static void bedMechanic(Data data, Random random, AudioClass audioClass){
         if (cooldownTimer > 0 && !Player.freeze) {
-            if ((!catAttackMode || catAttackModeLock)) {
+            if (catAttackModeLock) {
                 cooldownTimer -= Gdx.graphics.getDeltaTime();
+                if (!catAttackMode && cooldownTimer <= 8) catAttackMode = true;
                 if (cooldownTimer <= 0){
                     if (Player.room == 1) cooldownTimer += Gdx.graphics.getDeltaTime();
                     else cooldownTimer = 0;
@@ -634,36 +609,18 @@ public class ShadowCat {
             }
 
             if (cooldownTimer <= 0) {
-                if (!catAttackMode){
-                    audioClass.play("catPeek");
-                    room = 4;
-                    cooldownTimer = 6;
-                    bedSpotted = false;
-                    timeToFlash = 0;
-                    side = 2 * random.nextInt(2);
-                    bedTarget = 21;
-                    if (side == 0){
-                        catBreath = "catLeft";
-                    } else {
-                        catBreath = "catRight";
-                    }
-                    audioClass.play(catBreath);
-                    audioClass.loop(catBreath, true);
-                    audioClass.setVolume(catBreath, 0);
-                    bedPosition = bedTarget - 0.01f;
-                } else if ((ShadowVinnie.room == 0 && ShadowRat.room == 0) && ((Player.side == 0 && side == 2) || (Player.side == 2 && side == 0))) {
+                if ((ShadowVinnie.room == 0 && ShadowRat.room == 0) && ((Player.side == 0 && side == 2) || (Player.side == 2 && side == 0))) {
                     audioClass.play("peek");
                     tapeSpotted = false;
                     room = 1;
-                    teleportTarget = 2;
-                    timeToFlash = 0.5f;
+                    teleportTarget = 1;
+                    timeToFlash = 0.4f;
                     Player.lastCharacterAttack = "Shadow";
                     bedSpotted = false;
                     cooldownTimer = 2f;
-                    patienceHealthTimer = 2f;
                     patienceTimer = 2f;
                     teleports = 0;
-                    teleportTime = 4;
+                    teleportTime = 5.5f;
                     Player.blacknessMultiplier = 6;
                     attackPosition = 3;
                     attackPositionTarget = 3;
@@ -680,7 +637,6 @@ public class ShadowCat {
 
             if (shaking) {
                 timeToFlash -= Gdx.graphics.getDeltaTime();
-                patienceHealthTimer += Gdx.graphics.getDeltaTime() / 2;
                 if (timeToFlash <= 0 && moveToPosition == 0){
                     if (middleAttackMoves == 0) {
                         timeToFlash = 0;
@@ -700,14 +656,6 @@ public class ShadowCat {
                         jumpscareI = 1;
                     }
                 }
-
-                if (middleAttackMoves > 0 && middleAttackMoves < 8) {
-                    patienceHealthTimer -= Gdx.graphics.getDeltaTime();
-                    if (patienceHealthTimer < 0) {
-                        patienceHealthTimer = 0;
-                        jumpscareI = 1;
-                    }
-                }
             }
 
             if (moveToPosition == 0 && timeToFlash <= 0 && !Player.freeze) {
@@ -715,11 +663,11 @@ public class ShadowCat {
                     timeToFlash = 0;
                     skipped = true;
                 } else {
-                    timeToFlash = 0.15f + 0.15f * random.nextInt(2);
+                    timeToFlash = 0.26f - random.nextInt(2) * 0.13f;
                     middleAttackMoves--;
                     skipped = false;
                 }
-                patienceTimer = 0.65f;
+                patienceTimer = 0.6f;
                 moveToPosition = 3;
 
                 if (attackPosition == 0) {
@@ -763,11 +711,7 @@ public class ShadowCat {
                 dontSoundShake = false;
                 room = 2;
                 catAttackMode = false;
-                catAttackModeLock = false;
-                if (data.challenge4 && Monstergami.cooldownTimer == 0){
-                    Monstergami.pause = false;
-                }
-                cooldownTimer = 10;
+                cooldownTimer = 20;
                 bedPatienceTimer = 4;
                 audioClass.play("crawl");
                 shaking = false;
@@ -781,65 +725,6 @@ public class ShadowCat {
                 }
             } else if (Player.blacknessDelay == 0) {
                 Player.freeze = false;
-            }
-        }
-    }
-
-    public static void farBedMechanic(Random random, AudioClass audioClass){
-        audioClass.setVolume(catBreath, ((bedTarget - bedPosition) / bedTarget) * 0.75f);
-        float flashTimerTarget = 1.5f;
-        if (twitchyCat) flashTimerTarget++;
-
-        if (timeToFlash == flashTimerTarget){
-            bedPosition += Gdx.graphics.getDeltaTime() * 45;
-            if (bedPosition >= bedTarget || Player.room == 1){
-                bedPosition = bedTarget;
-                wait = true;
-                room = 2;
-                bedPatienceTimer = 4;
-                catAttackMode = true;
-                timeToFlash = 0;
-                audioClass.stop(catBreath);
-                bedSpotted = false;
-                side = 2 * random.nextInt(2);
-                cooldownTimer = 10;
-                if ((ShadowVinnie.room == 2 && ShadowVinnie.side == side) || (ShadowRat.room == 2 && ShadowRat.side == side)){
-                    if (side == 0) side = 2;
-                    else side = 0;
-                }
-            }
-        } else if (cooldownTimer > 0){
-            shaking = hitboxHit;
-
-            if (bedPosition > 0){
-                bedPosition -= Gdx.graphics.getDeltaTime() * 45;
-                if (bedPosition <= 0) bedPosition = 0;
-            } else if (shaking){
-                twitchPosition += Gdx.graphics.getDeltaTime() * 30;
-                if (twitchPosition >= 2) {
-                    twitchPosition = 0;
-                }
-
-                timeToFlash += Gdx.graphics.getDeltaTime();
-                if (timeToFlash >= flashTimerTarget){
-                    bedPosition = 1;
-                    timeToFlash = flashTimerTarget;
-                    shaking = false;
-                    twitchingNow = false;
-                }
-            } else {
-                timeToFlash -= Gdx.graphics.getDeltaTime();
-                if (timeToFlash < 0){
-                    timeToFlash = 0;
-                }
-
-                twitchPosition = 0;
-                if (!pause) cooldownTimer -= Gdx.graphics.getDeltaTime();
-
-                if (cooldownTimer < 0){
-                    cooldownTimer = 0;
-                    jumpscareI = 1;
-                }
             }
         }
     }

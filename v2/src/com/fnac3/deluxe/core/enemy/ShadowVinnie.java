@@ -38,7 +38,6 @@ public class ShadowVinnie {
     public static float attackPosition;
     public static float framesToMove;
     public static float attackTime;
-    public static float patienceHealthTimer;
     public static int jumps;
     public static int jumpTarget;
     public static float jumpAnimation;
@@ -111,7 +110,7 @@ public class ShadowVinnie {
 
             switch (room) {
                 case 0:
-                    if (hitboxHit) {
+                    if (hitboxHit && patienceTimer <= 0.5f) {
                         doorRetreat(audioClass);
                     }
                     doorMechanic(random, audioClass);
@@ -379,15 +378,7 @@ public class ShadowVinnie {
                 break;
         }
 
-        if (data.laserPointer){
-            if (data.expandedPointer) {
-                hitboxDistance *= 0.8f;
-            } else {
-                hitboxDistance *= 0.6f;
-            }
-        } else if (data.expandedPointer){
-            hitboxDistance *= 1.2f;
-        }
+        hitboxDistance = Utils.setHitboxDistance(data, hitboxDistance);
     }
 
     public static void render(SpriteBatch batch) {
@@ -412,7 +403,7 @@ public class ShadowVinnie {
             switch (room) {
                 case 0:
                     lookInRoom = true;
-                    if (!leaveRoom && doorAnimation >= 1) {
+                    if (doorAnimation >= 1) {
                         texture = "Looking Away/" + sideTexture + " Look Away/LookAway" + (int) (14 - doorAnimation);
                         if (side == 0) {
                             x = 418;
@@ -423,15 +414,6 @@ public class ShadowVinnie {
                         } else {
                             x = 2490;
                             y = 319;
-                        }
-                    } else if (doorAnimation >= 1) {
-                        texture = "Leaving/" + sideTexture + "/Leaving" + (int) (19 - doorAnimation);
-                        if (side == 0) {
-                            x = 180;
-                            y = 334;
-                        } else {
-                            x = 2487;
-                            y = 279;
                         }
                     }
                     break;
@@ -549,7 +531,7 @@ public class ShadowVinnie {
         jumpCase = 0;
         jumpscareTime = 0.9f;
         tapeWeasel = false;
-        doorCooldown = (float) (5 + 0.3 * (20 - ai));
+        doorCooldown = 6;
         cooldownTimer = 5;
         knocks = 0;
         knockTimer = 0;
@@ -557,6 +539,7 @@ public class ShadowVinnie {
         bedSpotted = false;
         jumpscare = false;
         side = -1;
+        patienceTimer = 0;
         attack = false;
         shaking = false;
         dontSoundShake = false;
@@ -573,16 +556,16 @@ public class ShadowVinnie {
     }
 
     public static void doorMechanic(Random random, AudioClass audioClass){
-        if (doorCooldown > 0){
-            doorCooldown -= Gdx.graphics.getDeltaTime();
-            if (pause && !doorLock && doorCooldown <= 0) {
-                doorCooldown = 0.01f;
+        if (leaveRoom && patienceTimer > 0){
+            patienceTimer -= Gdx.graphics.getDeltaTime();
+            if (patienceTimer <= 0){
+                jumpscareI = 1;
             }
+        }
+        if (doorCooldown > 0 && Game.doorTurn == 1 && !Player.freeze){
+            doorCooldown -= Gdx.graphics.getDeltaTime();
             if (doorAnimation < 1){
                 doorAnimation = 0;
-                if (leaveRoom){
-                    leaveRoom = false;
-                }
             } else {
                 doorAnimation -= Gdx.graphics.getDeltaTime() * 25;
             }
@@ -590,13 +573,13 @@ public class ShadowVinnie {
                 doorCooldown = 0;
                 doorLock = true;
                 if (cooldownTimer > 0) {
-                    if (!ShadowRat.active || ShadowRat.side == -1) {
+                    if (!ShadowCat.active || ShadowCat.room == -1) {
                         side = random.nextInt(3);
-                    } else if (ShadowRat.side == 0){
+                    } else if (ShadowCat.side == 0){
                         side = 1 + random.nextInt(2);
-                    } else if (ShadowRat.side == 1){
+                    } else if (ShadowCat.side == 1){
                         side = 2 * random.nextInt(2);
-                    } else if (ShadowRat.side == 2){
+                    } else if (ShadowCat.side == 2){
                         side = random.nextInt(2);
                     }
 
@@ -654,8 +637,7 @@ public class ShadowVinnie {
                 framesToMove = 0;
                 attackTime = 2;
                 attackPosition = 0;
-                patienceHealthTimer = 2;
-                patienceTimer = 0.65f;
+                patienceTimer = 0.75f;
                 Player.blacknessTimes = 3;
                 Player.blacknessMultiplier = 6;
                 timeToFlash = 0.65f;
@@ -670,7 +652,8 @@ public class ShadowVinnie {
     public static void doorRetreat(AudioClass audioClass){
         audioClass.play("spotted");
         peekSpotted = false;
-        doorCooldown = 5;
+        doorCooldown = 6;
+        leaveRoom = false;
         if (Game.doorTurn != 1) cooldownTimer = 5;
         doorLock = false;
     }
@@ -776,11 +759,10 @@ public class ShadowVinnie {
                         }
                     }
 
-                    patienceTimer = 0.65f;
-
-                    if ((int) framesToMove == 0) timeToFlash -= Gdx.graphics.getDeltaTime();
-                    patienceHealthTimer += Gdx.graphics.getDeltaTime() / 3.5f;
-                    if (patienceHealthTimer > 2) patienceHealthTimer = 2;
+                    if ((int) framesToMove == 0) {
+                        timeToFlash -= Gdx.graphics.getDeltaTime();
+                        patienceTimer += Gdx.graphics.getDeltaTime();
+                    }
                     if (timeToFlash <= 0 && attackTime == 0) {
                         if (jumps == 0) {
                             Player.snapPosition = false;
@@ -799,7 +781,7 @@ public class ShadowVinnie {
                                 jumpTarget = 19;
                                 jumpCase = 0;
                             } else {
-                                if ((Cat.room != 4 && random.nextInt(2) == 0) || (Cat.room == 4 && Cat.side == 0)) {
+                                if (random.nextInt(2) == 0) {
                                     jumpTarget = 21;
                                     jumpCase = 0;
                                 } else {
@@ -807,9 +789,7 @@ public class ShadowVinnie {
                                     jumpCase = 1;
                                 }
                             }
-                            patienceTimer = 0.65f;
-
-                            System.out.println("Position: " + attackPosition);
+                            patienceTimer = 0.6f;
 
                             if (attackPosition > 24) {
                                 framesToMove = 48 - attackPosition;
@@ -823,8 +803,6 @@ public class ShadowVinnie {
                                 }
                             }
 
-                            System.out.println("FramesToMove: " + framesToMove);
-
                             audioClass.play("vinnieDodge");
                             audioClass.loop("vinnieDodge", true);
                             dodgePlaying = true;
@@ -836,7 +814,7 @@ public class ShadowVinnie {
                         }
 
                         timeToFlash = 0.2f + 0.05f * random.nextInt(3);
-                        patienceTimer = 0.75f + 0.025f * (20 - ai);
+                        patienceTimer = 0.6f;
                         framesToMove = 8 + (1 + random.nextInt(48));
                         if (random.nextInt(2) == 1) {
                             framesToMove = -framesToMove;
@@ -893,9 +871,7 @@ public class ShadowVinnie {
                         jumpTarget = 0;
                         jumpAnimation = 0;
                         attackTime = 2;
-                        if (side == 1 && Cat.side == Player.side) patienceTimer = 3;
-                        else patienceTimer = 1f;
-                        patienceHealthTimer = 2f;
+                        patienceTimer = 0.6f;
                         timeToFlash = 0.65f;
                     }
                 }
@@ -936,11 +912,6 @@ public class ShadowVinnie {
             }
 
             if (!shaking && (int) framesToMove == 0 && jumpAnimation == 0) {
-                patienceHealthTimer -= Gdx.graphics.getDeltaTime();
-                if (patienceHealthTimer < 0) {
-                    patienceHealthTimer = 0;
-                }
-
                 patienceTimer -= Gdx.graphics.getDeltaTime();
                 if (patienceTimer < 0) {
                     patienceTimer = 0;
@@ -959,7 +930,7 @@ public class ShadowVinnie {
             twitchPosition = 0;
         }
 
-        if (cooldownTimer == 0 || patienceTimer == 0 || patienceHealthTimer == 0){
+        if (cooldownTimer == 0 || patienceTimer == 0){
             jumpscareI = 1;
         }
     }
@@ -1055,11 +1026,11 @@ public class ShadowVinnie {
                 twitchingNow = false;
                 dontSoundShake = false;
                 room = 0;
-                doorCooldown = 5;
+                patienceTimer = 1;
+                doorCooldown = 0;
                 cooldownTimer = 5;
                 leaveRoom = true;
-                doorAnimation = 18;
-                audioClass.play("vinnieLeave");
+                doorAnimation = 13;
             }
         }
     }

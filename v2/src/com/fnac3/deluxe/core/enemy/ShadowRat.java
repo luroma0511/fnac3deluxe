@@ -7,6 +7,7 @@ import com.fnac3.deluxe.core.input.Player;
 import com.fnac3.deluxe.core.state.Game;
 import com.fnac3.deluxe.core.util.AudioClass;
 import com.fnac3.deluxe.core.util.ImageHandler;
+import com.fnac3.deluxe.core.util.Utils;
 
 import java.util.Random;
 
@@ -31,12 +32,11 @@ public class ShadowRat {
     public static float timeToFlash;
     public static int chanceToSkip;
     public static boolean attack;
-    public static float teleportTime;
+    public static float attackTime;
     public static int teleports;
     public static int teleportTarget;
     public static boolean bedSpotted;
     public static float patienceTimer;
-    public static float patienceHealthTimer;
     public static float bedPatienceTimer;
     public static boolean tapeSpotted;
     public static float timeUntilWeasel;
@@ -46,7 +46,6 @@ public class ShadowRat {
     public static float jumpscareTimer;
     public static float jumpscareTime;
     public static int jumpscareI;
-    public static boolean pause;
 
     public static int knocks;
     public static boolean knockHard;
@@ -65,7 +64,6 @@ public class ShadowRat {
     }
 
     public static void update(Random random, Data data, AudioClass audioClass){
-        pause = ShadowVinnie.room != 0 || ShadowCat.room == 1 || ShadowCat.room == 3 || Monstergami.side != -1 || Player.freeze;
         if (jumpscareI == 0) {
             switch (room) {
                 case 0:
@@ -212,15 +210,7 @@ public class ShadowRat {
                 break;
         }
 
-        if (data.laserPointer){
-            if (data.expandedPointer) {
-                hitboxDistance *= 0.8f;
-            } else {
-                hitboxDistance *= 0.6f;
-            }
-        } else if (data.expandedPointer){
-            hitboxDistance *= 1.2f;
-        }
+        hitboxDistance = Utils.setHitboxDistance(data, hitboxDistance);
     }
 
     public static void render(SpriteBatch batch) {
@@ -367,13 +357,13 @@ public class ShadowRat {
             hitboxPosition[1] = -1;
         }
         tapeWeasel = false;
-        doorCooldown = 4;
+        doorCooldown = 6;
         cooldownTimer = 5;
         knocks = 0;
         knockTimer = 0;
         room = 0;
         teleports = 0;
-        teleportTime = 0;
+        attackTime = 0;
         bedSpotted = false;
         jumpscare = false;
         side = -1;
@@ -389,11 +379,8 @@ public class ShadowRat {
     }
 
     public static void doorMechanic(Random random, AudioClass audioClass){
-        if (doorCooldown > 0){
+        if (doorCooldown > 0 && Game.doorTurn == 0 && !Player.freeze){
             doorCooldown -= Gdx.graphics.getDeltaTime();
-            if (pause && !doorLock && doorCooldown <= 0){
-                doorCooldown = 0.01f;
-            }
             if (doorAnimation < 1){
                 doorAnimation = 0;
                 if (leaveRoom){
@@ -404,17 +391,16 @@ public class ShadowRat {
             }
             if (doorCooldown <= 0){
                 doorCooldown = 0;
-                doorLock = true;
                 if (cooldownTimer > 0) {
                     side = random.nextInt(3);
 
-                    if (ShadowVinnie.ai == 0 || ShadowVinnie.side == -1) {
+                    if (!ShadowCat.active || ShadowCat.room != 1) {
                         side = random.nextInt(3);
-                    } else if (ShadowVinnie.side == 0){
+                    } else if (ShadowCat.side == 0){
                         side = 1 + random.nextInt(2);
-                    } else if (ShadowVinnie.side == 1){
+                    } else if (ShadowCat.side == 1){
                         side = 2 * random.nextInt(2);
-                    } else if (ShadowVinnie.side == 2){
+                    } else if (ShadowCat.side == 2){
                         side = random.nextInt(2);
                     }
 
@@ -442,7 +428,8 @@ public class ShadowRat {
             }
         } else {
             if (cooldownTimer > 0) {
-                cooldownTimer -= Gdx.graphics.getDeltaTime();
+                if (ShadowCat.room == 1) cooldownTimer -= Gdx.graphics.getDeltaTime() / 2;
+                else cooldownTimer -= Gdx.graphics.getDeltaTime();
             }
 
             if (doorAnimation < 13) {
@@ -452,20 +439,19 @@ public class ShadowRat {
                 }
             }
             if (cooldownTimer <= 0 && Player.blackness == 1 && Player.blacknessTimes == 0){
-                cooldownTimer = 4;
+                cooldownTimer = 5;
                 room = 1;
                 teleportTarget = 1;
                 attackPosition = 0;
                 attackPositionTarget = 0;
-                patienceHealthTimer = 2f;
                 patienceTimer = 0.75f;
                 Player.blacknessTimes = 3;
                 Player.blacknessMultiplier = 6;
-                teleportTime = 8;
+                attackTime = 3.5f;
                 teleports = 0;
                 int multiplier = Game.hourOfGame / 2;
                 if (Game.hourOfGame == 12) multiplier = 0;
-                timeToFlash = (0.5f - (0.1f * multiplier));
+                timeToFlash = (0.65f - (0.1f * multiplier));
                 chanceToSkip = 4;
                 audioClass.play("walking_in");
                 if (side == ShadowCat.side && ShadowCat.room == 1) jumpscareI = 1;
@@ -476,9 +462,8 @@ public class ShadowRat {
     public static void doorRetreat(AudioClass audioClass){
         audioClass.play("spotted");
         peekSpotted = false;
-        doorCooldown = 4;
+        doorCooldown = 6;
         if (Game.doorTurn != 0) cooldownTimer = 5;
-        doorLock = false;
     }
 
     public static void knockAtDoor(AudioClass audioClass){
@@ -528,15 +513,11 @@ public class ShadowRat {
                 if (data.hardCassette) timeUntilWeasel = 0.01f;
                 else timeUntilWeasel = 0.25f + random.nextInt(2) + random.nextFloat();
             }
-            if (data.challenge4
-                    && Monstergami.pause
-                    && !Monstergami.wait
-                    && Monstergami.cooldownTimer == 0){
-                Monstergami.pause = false;
-                cooldownTimer -= 3;
-            }
 
-            side = 2 * random.nextInt(2);
+            if (ShadowCat.active && ShadowCat.room == 2) {
+                if (ShadowCat.side == 0) side = 2;
+                else side = 0;
+            } else side = 2 * random.nextInt(2);
         }
 
         if (teleports == 0 && !attack && Player.flashlightAlpha > 0 && !Player.turningAround && Player.room == 0) {
@@ -547,18 +528,11 @@ public class ShadowRat {
         if (attack) {
             shaking = hitboxHit;
 
-            if (Player.snapPosition && teleportTime > 0) {
-                teleportTime -= Gdx.graphics.getDeltaTime();
-                if (teleportTime < 0) {
-                    teleportTime = 0;
-                }
-            }
-
             if (shaking) {
+                attackTime -= Gdx.graphics.getDeltaTime();
                 timeToFlash -= Gdx.graphics.getDeltaTime();
-                patienceHealthTimer += Gdx.graphics.getDeltaTime() / 2.5f;
-                if (patienceHealthTimer > 2) patienceHealthTimer = 2;
-                if (timeToFlash <= 0 && teleportTime == 0) {
+                patienceTimer += Gdx.graphics.getDeltaTime();
+                if (timeToFlash <= 0 && attackTime <= 0) {
                     Player.snapPosition = false;
                     if (teleports == teleportTarget) {
                         attack = false;
@@ -569,10 +543,9 @@ public class ShadowRat {
                         Player.blacknessDelay = 0.5f;
                         Player.freeze = true;
                     } else {
-                        teleportTime = 8;
+                        attackTime = 3.5f;
                         teleports++;
                         patienceTimer = 1.75f;
-                        patienceHealthTimer = 2;
                         Player.blacknessTimes = 1;
                         Player.blacknessMultiplier = 6;
 
@@ -599,28 +572,21 @@ public class ShadowRat {
 
                         int multiplier = Game.hourOfGame / 2;
                         if (Game.hourOfGame == 12) multiplier = 0;
-                        timeToFlash = (0.5f - (0.05f * multiplier));
+                        timeToFlash = (0.65f - (0.05f * multiplier));
                         chanceToSkip = 5;
-                        attackPosition = random.nextInt(3);
+                        attackPosition = 0;
                         attackPositionTarget = attackPosition;
                     }
                     return;
                 }
             } else if (moveToPosition == 0){
-                if (Player.snapPosition) {
-                    patienceHealthTimer -= Gdx.graphics.getDeltaTime();
-                    if (patienceHealthTimer < 0) {
-                        patienceHealthTimer = 0;
-                    }
-                }
-
                 patienceTimer -= Gdx.graphics.getDeltaTime();
                 if (patienceTimer < 0){
                     patienceTimer = 0;
                 }
             }
 
-            if (teleportTime > 0 && moveToPosition == 0 && timeToFlash <= 0) {
+            if (attackTime > 0 && moveToPosition == 0 && timeToFlash <= 0) {
                 if (!Player.snapPosition){
                     Player.snapPosition = true;
                     Player.snapToSide = side;
@@ -629,13 +595,13 @@ public class ShadowRat {
                 if (chanceToSkip > 1 && random.nextInt(chanceToSkip) != 0) {
                     int multiplier = Game.hourOfGame / 2;
                     if (Game.hourOfGame == 12) multiplier = 0;
-                    timeToFlash = (0.5f - (0.05f * multiplier)) / (1 + random.nextInt(2));
+                    timeToFlash = (0.3f - (0.05f * multiplier));
                     chanceToSkip--;
                 } else {
                     timeToFlash = 0;
                     chanceToSkip++;
                 }
-                patienceTimer = 0.75f;
+                patienceTimer = 0.5f;
                 moveToPosition = 3;
 
                 if (attackPosition == 0) {
@@ -671,7 +637,7 @@ public class ShadowRat {
             twitchPosition = 0;
         }
 
-        if (cooldownTimer == 0 || patienceTimer == 0 || patienceHealthTimer == 0){
+        if (cooldownTimer == 0 || patienceTimer == 0){
             jumpscareI = 1;
         }
     }
@@ -773,7 +739,7 @@ public class ShadowRat {
                 twitchingNow = false;
                 dontSoundShake = false;
                 room = 0;
-                doorCooldown = 4;
+                doorCooldown = 6;
                 cooldownTimer = 5;
                 leaveRoom = true;
                 doorAnimation = 18;

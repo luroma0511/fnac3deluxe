@@ -26,9 +26,8 @@ public class Data {
     public boolean flashDebug;
     public boolean hitboxDebug;
     public boolean freeScroll;
-    public boolean expandedPointer;
 
-    public boolean laserPointer;
+    public int pointer;
     public boolean hardCassette;
     public boolean faultyFlashlight;
     public boolean challenge4;
@@ -212,9 +211,8 @@ public class Data {
             flashDebug = readBooleanLineConfig(br);
             hitboxDebug = readBooleanLineConfig(br);
             freeScroll = readBooleanLineConfig(br);
-            expandedPointer = readBooleanLineConfig(br);
 
-            laserPointer = readBooleanLineConfig(br);
+            pointer = readIntLineConfig(br);
             hardCassette = readBooleanLineConfig(br);
             faultyFlashlight = readBooleanLineConfig(br);
             challenge4 = readBooleanLineConfig(br);
@@ -251,8 +249,7 @@ public class Data {
                 .append("flashDebug = ").append(flashDebug).append("\n")
                 .append("hitboxDebug = ").append(hitboxDebug).append("\n")
                 .append("freeScroll = ").append(freeScroll).append("\n")
-                .append("expandedPointer = ").append(expandedPointer).append("\n")
-                .append("laserPointer = ").append(laserPointer).append("\n")
+                .append("pointer = ").append(pointer).append("\n")
                 .append("hardCassette = ").append(hardCassette).append("\n")
                 .append("faultyFlashlight = ").append(faultyFlashlight).append("\n")
                 .append("challenge4 = ").append(challenge4).append("\n");
@@ -281,7 +278,7 @@ public class Data {
     }
 
     private void mode(SaveData.Mode mode){
-        boolean[] arr = new boolean[]{true, !expandedPointer && laserPointer, hardCassette, faultyFlashlight, challenge4};
+        boolean[] arr = new boolean[]{true, pointer > 0, hardCassette, faultyFlashlight, challenge4};
         int numberOfChallenges = 0;
 
         for (boolean b : arr) {

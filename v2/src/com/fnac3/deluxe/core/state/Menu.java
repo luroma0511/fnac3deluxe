@@ -536,14 +536,10 @@ public class Menu {
                 data.freeScroll = !data.freeScroll;
                 modeSwitch = true;
                 writeConfig = true;
-            } else if (expandedPointer){
-                audioClass.play("select");
-                data.expandedPointer = !data.expandedPointer;
-                modeSwitch = true;
-                writeConfig = true;
             } else if (challenge1){
                 audioClass.play("select");
-                data.laserPointer = !data.laserPointer;
+                data.pointer++;
+                if (data.pointer > 3) data.pointer = 0;
                 modeSwitch = true;
                 writeConfig = true;
             } else if (challenge2){
@@ -564,12 +560,12 @@ public class Menu {
             } else if (allChallenges){
                 audioClass.play("select");
                 if (data.allChallenges){
-                    data.laserPointer = false;
+                    data.pointer = 0;
                     data.hardCassette = false;
                     data.faultyFlashlight = false;
                     data.challenge4 = false;
                 } else {
-                    data.laserPointer = true;
+                    data.pointer = 1;
                     data.hardCassette = true;
                     data.faultyFlashlight = true;
                     data.challenge4 = true;
@@ -729,7 +725,7 @@ public class Menu {
             }
 
             if ((oldMenuContext == 0 && mode.equals("Rat & Cat"))
-                || (oldMenuContext == 1 && data.laserPointer)
+                || (oldMenuContext == 1 && data.pointer > 0)
                 || (oldMenuContext == 2 && data.vSync)
                 || (oldMenuContext == 3 && data.flashDebug)
                 || mode1 || challenge1 || vSync || flashDebug){
@@ -767,7 +763,7 @@ public class Menu {
             if ((oldMenuContext == 0 && mode.equals("Play Date"))
                 || (oldMenuContext == 1 && data.challenge4)
                 || (oldMenuContext == 2 && data.menuMusic)
-                || (oldMenuContext == 3 && data.expandedPointer)
+//                || (oldMenuContext == 3 && data.expandedPointer)
                 || mode4 || challenge4 || Menu.menuMusic || expandedPointer){
                 button4Alpha += time * 3;
                 if (button4Alpha > 0.25f) button4Alpha = 0.25f;
@@ -842,7 +838,7 @@ public class Menu {
             previousTextCase = textCase;
             previousEnemyCase = enemyCase;
 
-            data.allChallenges = data.laserPointer && data.hardCassette
+            data.allChallenges = data.pointer > 0 && data.hardCassette
                     && data.faultyFlashlight && data.challenge4;
         } else {
             if (stateManager.getState() == StateManager.State.MENU){
@@ -1103,11 +1099,10 @@ public class Menu {
         yPos -= 36;
         menuFontLabel.draw(batch, "Free Scroll", xPosLabel, yPos);
         yPos -= 36;
-        menuFontLabel.draw(batch, "Expanded Pointer", xPosLabel, yPos);
 
         //challenge labels
         yPos -= 82;
-        menuFontLabel.draw(batch, "Laser Pointer", xPosLabel, yPos);
+        menuFontLabel.draw(batch, data.pointer <= 1 ? "Laser Pointer" : data.pointer == 2 ? "OG Laser Pointer" : "Pixel Pointer", xPosLabel, yPos);
         yPos -= 36;
         menuFontLabel.draw(batch, "Hard Cassette", xPosLabel, yPos);
         yPos -= 36;
@@ -1135,11 +1130,11 @@ public class Menu {
         yPos -= 36;
         challengeRender(batch, data.freeScroll, freeScroll, xPos, yPos, r, b, alpha);
         yPos -= 36;
-        challengeRender(batch, data.expandedPointer, expandedPointer, xPos, yPos, r, b, alpha);
+//        challengeRender(batch, data.expandedPointer, expandedPointer, xPos, yPos, r, b, alpha);
 
         //challenge boxes
         yPos -= 82;
-        challengeRender(batch, data.laserPointer, challenge1, xPos, yPos, r, b, alpha);
+        challengeRender(batch, data.pointer > 0, challenge1, xPos, yPos, r, b, alpha);
         yPos -= 36;
         challengeRender(batch, data.hardCassette, challenge2, xPos, yPos, r, b, alpha);
         yPos -= 36;
@@ -1454,7 +1449,8 @@ public class Menu {
     private static void toggleAll(Data data, boolean toggle){
         switch (oldMenuContext){
             case 1 -> {
-                data.laserPointer = toggle;
+                if (toggle) data.pointer = 1;
+                else data.pointer = 0;
                 data.hardCassette = toggle;
                 data.faultyFlashlight = toggle;
                 data.challenge4 = toggle;
@@ -1470,7 +1466,6 @@ public class Menu {
                 data.flashDebug = toggle;
                 data.hitboxDebug = toggle;
                 data.freeScroll = toggle;
-                data.expandedPointer = toggle;
             }
         }
     }

@@ -674,14 +674,14 @@ public class Player {
 
     public static void move(float mx, float my, float viewportWidth, float viewportHeight){
 
-        float value = Gdx.graphics.getDeltaTime() * 65;
+        float value = Gdx.graphics.getDeltaTime() * 75;
         float distance;
 
         //If player is not facing the tape and not turning around
         if (room != 2 && !turningAround) {
             float leftBarrier = viewportWidth / 4;
             float rightBarrier = leftBarrier * 3;
-            float limit = 21.5f;
+            float limit = 22.5f;
 
             if (mx < leftBarrier && roomPosition[0] > 0) {
                 distance = (leftBarrier - mx) / 8f;
@@ -717,7 +717,7 @@ public class Player {
         if (room == 0 && !turningAround) {
             float downBarrier = viewportHeight / 3;
             float upBarrier = downBarrier * 2;
-            float limit = 12f;
+            float limit = 12.5f;
 
             if (my < downBarrier && roomPosition[1] > 0) {
                 distance = (downBarrier - my) / 5f;
@@ -773,13 +773,13 @@ public class Player {
             distance = 45;
         }
 
-        roomPosition[0] += distance * (Gdx.graphics.getDeltaTime() * 50);
+        roomPosition[0] += distance * (Gdx.graphics.getDeltaTime() * 60);
 
         distance = (snapTo[1] - roomPosition[1]);
 
         distance /= 10;
 
-        roomPosition[1] += distance * (Gdx.graphics.getDeltaTime() * 50);
+        roomPosition[1] += distance * (Gdx.graphics.getDeltaTime() * 60);
 
     }
 
@@ -840,15 +840,7 @@ public class Player {
         float h = texture.getHeight();
         float w = texture.getWidth();
 
-        float percentage = 1;
-        //laser pointer
-        if (data.laserPointer) {
-            percentage -= 0.5f;
-        }
-
-        if (data.expandedPointer) {
-            percentage += 0.25f;
-        }
+        float percentage = 1 - 0.25f * data.pointer;
 
         w *= percentage;
         h *= percentage;

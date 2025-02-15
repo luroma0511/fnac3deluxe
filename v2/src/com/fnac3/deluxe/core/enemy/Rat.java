@@ -7,6 +7,7 @@ import com.fnac3.deluxe.core.input.Player;
 import com.fnac3.deluxe.core.state.Game;
 import com.fnac3.deluxe.core.util.AudioClass;
 import com.fnac3.deluxe.core.util.ImageHandler;
+import com.fnac3.deluxe.core.util.Utils;
 
 import java.util.Random;
 
@@ -226,15 +227,7 @@ public class Rat {
                 break;
         }
 
-        if (data.laserPointer){
-            if (data.expandedPointer) {
-                hitboxDistance *= 0.8f;
-            } else {
-                hitboxDistance *= 0.6f;
-            }
-        } else if (data.expandedPointer){
-            hitboxDistance *= 1.2f;
-        }
+        hitboxDistance = Utils.setHitboxDistance(data, hitboxDistance);
     }
 
     public static void render(SpriteBatch batch) {

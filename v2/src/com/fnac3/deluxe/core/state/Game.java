@@ -515,13 +515,11 @@ public class Game {
             win = true;
             if (Menu.nightType == 0){
                 data.writeWin(Menu.modeName,
-                        !data.flashDebug && !data.hitboxDebug && (!data.expandedPointer || data.laserPointer)
-                );
+                        !data.flashDebug && !data.hitboxDebug);
             } else if (Menu.nightType == 1){
                 data.writeWin("The Deepscape",
                         ShadowRat.active && ShadowCat.active && ShadowVinnie.ai != 0
-                                    && !data.flashDebug && !data.hitboxDebug && (!data.expandedPointer || data.laserPointer)
-                );
+                                    && !data.flashDebug && !data.hitboxDebug);
             }
             audioClass.stopAllSounds();
             audioClass.play("win");
@@ -1293,13 +1291,7 @@ public class Game {
                         rect_value = Math.min(Vinnie.patienceHealthTimer, 2) / 2;
                     }
                 } else if (Menu.nightType == 1){
-                    if (ShadowRat.room == 1) {
-                        rect_value = Math.min(ShadowRat.patienceHealthTimer, 2) / 2;
-                    } else if (ShadowCat.room == 1) {
-                        rect_value = Math.min(ShadowCat.patienceHealthTimer, 2) / 2;
-                    } else {
-                        rect_value = Math.min(ShadowVinnie.patienceHealthTimer, 2) / 2;
-                    }
+
                 }
                 batch.draw(texture, position + width, offsety + 110, (width * 2) * rect_value, 20);
             }

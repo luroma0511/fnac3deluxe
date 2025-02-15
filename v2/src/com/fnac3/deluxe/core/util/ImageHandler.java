@@ -310,7 +310,11 @@ public class ImageHandler {
 
             bedAssetsLoad(prefix);
             tapeAssetsLoad(prefix, 14);
-            doorAssetsLoad(prefix);
+            for (int i = 1; i <= 13; i++) {
+                add(prefix + "Looking Away/Left Look Away/LookAway" + i);
+                add(prefix + "Looking Away/Middle Look Away/LookAway" + i);
+                add(prefix + "Looking Away/Right Look Away/LookAway" + i);
+            }
 
             add("game/gameover/shadowVinnie");
         }
@@ -474,11 +478,10 @@ public class ImageHandler {
     }
 
     private static void doorAssetsLoad(String prefix){
-        String[] sidesList = new String[]{"Left", "Middle", "Right"};
-        for (String side: sidesList) {
-            for (int i = 1; i <= 13; i++) {
-                add(prefix + "Looking Away/" + side + " Look Away/LookAway" + i);
-            }
+        for (int i = 1; i <= 13; i++) {
+            add(prefix + "Looking Away/Left Look Away/LookAway" + i);
+            add(prefix + "Looking Away/Middle Look Away/LookAway" + i);
+            add(prefix + "Looking Away/Right Look Away/LookAway" + i);
         }
 
         for (int i = 1; i <= 18; i++) {

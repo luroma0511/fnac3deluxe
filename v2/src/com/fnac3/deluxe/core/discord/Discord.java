@@ -51,7 +51,7 @@ public class Discord {
         boolean monstergamiNight = gameMode.equals("Monstergami Night");
         int numberOfChallenges = 0;
 
-        if (data.laserPointer && !data.expandedPointer){
+        if (data.pointer > 0){
             numberOfChallenges++;
         }
 

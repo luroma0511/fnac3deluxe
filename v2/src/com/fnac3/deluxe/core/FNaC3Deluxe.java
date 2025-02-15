@@ -212,7 +212,7 @@ public class FNaC3Deluxe extends ApplicationAdapter implements InputProcessor {
 
 		if (Discord.updateStatus) {
 			Discord.update(data, stateManager.getState().toString(), Menu.modeName, Game.hourOfGame,
-					data.flashDebug || data.hitboxDebug || (data.expandedPointer && !data.laserPointer));
+					data.flashDebug || data.hitboxDebug);
 		}
 
 		scrollAmount = 0;
